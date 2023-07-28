@@ -1,6 +1,7 @@
 #!/usr/bin/python
 '''
-  simple.py	-	Simple Python procedure
+  NAME
+    simple.py	-	Simple Python procedure
 
   AUTHOR
     Written by John Brink
