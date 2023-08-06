@@ -43,6 +43,26 @@ def get_files(path):
   else:
     return(0)
   
+'''
+  Example:
+
+	#EXTM3U
+	#EXTINF:233,Vonda Shepard - Searchin' My Soul
+	01 - Searchin' My Soul.flac
+	#EXTINF:163,Vonda Shepard - Ask The Lonely
+	02 - Ask The Lonely.flac
+	#EXTINF:188,Vonda Shepard - Walk Away Renee
+	03 - Walk Away Renee.flac
+	#EXTINF:232,Vonda Shepard - Maryland
+	14 - Maryland.flac
+'''
+def create_m3u(path, files):
+  print('#EXTM3U')
+  for f in files:
+    if ('.mp3' in f) or ('.flac' in f):
+      print('#EXTINF:{}'.format(f))
+      print('{}/{}'.format(path,f))
+
 
 parser = argparse.ArgumentParser(
                description="Generate playlist for given directory")
@@ -90,6 +110,7 @@ if not files == 0:
     for f in files:
       print(f)
     print(80*"-")
+  create_m3u(dir, files)
 else:
   print(f"{dir} doesn't contain any files")
   sys.exit(0)
