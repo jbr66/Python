@@ -9,13 +9,17 @@
   REVISION HISTORY
   ----------------------------------------------------------------
     1.0 07/31/2023 jbr - Initial version
+    1.1 08/06/2023 j6b - Get directory sorted
   ----------------------------------------------------------------
 '''
 
 import os
 import sys
 import argparse
+import subprocess
 
+'''
+# v1.0
 def get_files(path):
   r = []
   for file in os.listdir(path):
@@ -26,6 +30,19 @@ def get_files(path):
     return(r)
   else:
     return(0)
+'''
+
+# v1.1
+def get_files(path):
+  cmd = '/bin/ls'
+
+  r = subprocess.run([cmd, path], capture_output=True, text=True)
+
+  if len(r.stdout) > 0:
+    return(r.stdout.split('\n'))
+  else:
+    return(0)
+  
 
 parser = argparse.ArgumentParser(
                description="Generate playlist for given directory")
@@ -65,6 +82,8 @@ else:
   files = get_files(dir)
 
 if not files == 0:
+  if debug:
+    print(files)
   if verbose >= 2:
     print("Found the following files:")
     print(80*"-")
