@@ -1,0 +1,13 @@
+yaml is not included in the standard Python library
+and need to be installed using pip3.
+
+Install pip3
+------------
+
+$ sudo apt update
+$ sudo apt install python3-pip
+
+Install pyyaml
+--------------
+
+$ pip3 install pyyaml
