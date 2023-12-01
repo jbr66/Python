@@ -1,0 +1,18 @@
+---
+Personen:
+  - John:
+      - leeftijd: 57
+      - opleiding: 
+        - VWO-B
+        - HBO-ICT
+      - sport:
+        - volleybal
+        - padel
+  - Britt:
+      - leeftijd: 19
+      - opleiding:
+        - HAVO
+        - HBO-ICT
+      - sport:
+        - volleybal
+...
