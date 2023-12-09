@@ -9,14 +9,33 @@ AUTHOR
 REVISION HISTORY
 -------------------------------------------------------
 	1.0	12/01/2023 john - Initial version
+        1.1     12/09/2023 john - Using input parameters
 -------------------------------------------------------
 vim:ts=4
 '''
 
+import os, sys
 import yaml
 import json
+import argparse
 
-with open('example.yml', 'r') as file:
+# Define parameters
+
+parser = argparse.ArgumentParser(
+        description="Process given yaml file"
+        )
+parser.add_argument('file',
+        help="provide yaml based file"
+        )
+args = parser.parse_args()
+
+file2read = args.file
+
+if not os.path.isfile(file2read):
+    print("File {} could not be found - Exiting".format(file2read))
+    sys.exit(1)
+
+with open(file2read, 'r') as file:
 	ex = yaml.safe_load(file)
 
 print(ex)
