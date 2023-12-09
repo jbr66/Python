@@ -35,8 +35,15 @@ if not os.path.isfile(file2read):
     print("File {} could not be found - Exiting".format(file2read))
     sys.exit(1)
 
-with open(file2read, 'r') as file:
-	ex = yaml.safe_load(file)
+try:
+    with open(file2read, 'r') as file:
+        ex = yaml.safe_load(file)
+except PermissionError:
+    print("Not enough permissions to open file {}".format(file2read))
+    sys.exit(2)
+except e:
+    print("Failed to open file {}".format(file2read))
+    sys.exit(3)
 
 print(ex)
 print(42*'-')
