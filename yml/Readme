@@ -11,3 +11,8 @@ Install pyyaml
 --------------
 
 $ pip3 install pyyaml
+
+Other option
+------------
+
+$ pip3 install -r requirements.txt

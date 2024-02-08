@@ -1,0 +1,41 @@
+# loglevel can be INFO or ERROR
+loglevel: ERROR
+logerror: etl.error
+logfile: etl.log
+gc_compat: False
+gc_start: 10000
+targetschema: public
+drop_table_if_exists: True
+etl: True
+stage: /dr01/stage
+fwd_index_name: FWDPRIMARY
+fwd_index_key: recid
+fwd_index_field: recid;int64;9999999999;0;1;yes;8
+fwd_sequence: p2j_id_generator_sequence
+idxsuffix: None
+idxprefix: idx__
+# note there are no current extent fields in QAD with datetime or datetime-tz so the conversion logic will not
+# process these datetime in the extend field denormalization logic
+datetime_index_suffix: _offset
+process_entire_database: False
+quit_on_table_error: True
+mappings:
+  character: varchar
+  extent: json
+  int: integer
+  integer: integer
+  int64: bigint
+  recid: bigint
+  logical: boolean
+  date: date
+  decimal: decimal(50,10)
+  clob: mediumtext
+  lob: mediumtext
+  blob: mediumtext
+  raw: mediumtext
+  datetime-tz: datetime
+  datetime: datetime
+  list: text
+  listd: text
+# ABL filename looks in current working directory unless qualified
+ablcopy: '\copy \"#TABLENAME#\" from #DUMPNAME# delimiter #DELIMITER# CSV HEADER'

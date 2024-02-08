@@ -10,6 +10,7 @@ REVISION HISTORY
 -------------------------------------------------------
 	1.0	12/01/2023 john - Initial version
         1.1     12/09/2023 john - Using input parameters
+	1.2	02/08/2024 john - Example for config
 -------------------------------------------------------
 vim:ts=4
 '''
@@ -51,3 +52,8 @@ print("Output as JSON")
 print(json.dumps(ex, indent=2))
 print(42*'-')
 
+print('Example of config:')
+for i in ex:
+	print('{} : {}'.format(i,ex[i]))
+
+print('Mapping: {}'.format(ex['mappings']['character']))
