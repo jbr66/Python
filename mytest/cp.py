@@ -2,11 +2,20 @@
 
 import sys
 import argparse
+import getpass
 
-print('hallo')
+try:
+	name = getpass.getuser()
+except Exception as e:
+	print("Error getting username - %s" % e)
+	sys.exit(2)
+
+print('hallo %s' % getpass.getuser())
 parser = argparse.ArgumentParser()
-parser.add_argument('file')
-parser.add_argument('tofile')
+parser.add_argument('file',
+	help = 'Name of file to copy from')
+parser.add_argument('tofile',
+	help = 'Name of file to copy to, but will NOT overwrite file')
 
 args   = parser.parse_args()
 file   = args.file
@@ -24,7 +33,7 @@ except Exception as e:
 
 # create new file
 try:
-	with open(tofile,'w') as f:
+	with open(tofile,'x') as f:
 		f.write(data)
 except Exception as e:
 	print('Error writing data to %s - %s' % (tofile, e))
