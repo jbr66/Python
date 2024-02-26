@@ -41,7 +41,7 @@ except Exception as e:
 	sys.exit(1)
 
 for s in data.keys():
-	print('Student %s:' % s.upper())
+	print('Student: %s' % s.capitalize())
 	line = '+' + 29*'-' + '+'
 	print(line)
 	header = '| %11s | %4s | %5s |' % ('vak'.center(11),'grade','round')
