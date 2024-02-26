@@ -40,13 +40,13 @@ except Exception as e:
 	print("Error reading %s - %s" % (file,e))
 	sys.exit(1)
 
-line = '+' + 28*'-' + '+'
+line = '+' + 29*'-' + '+'
 print(line)
-header = '| %-10s | %4s | %5s |' % ('vak','grade','round')
+header = '| %11s | %4s | %5s |' % ('vak'.center(11),'grade','round')
 print(header)
 print(line) 
 for v in data.keys():
 	mean = calculateMean(data[v])
-	print('| %10s | %5.2f | %3.0f   |' % (v,mean,round(mean,0)))
+	print('| %11s | %5.2f | %3.0f   |' % (v,mean,round(mean,0)))
 
 print(line)
