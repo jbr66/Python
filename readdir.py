@@ -56,9 +56,13 @@ import sys
 parser = argparse.ArgumentParser()
 parser.add_argument('directory', nargs='?', default='.',
 	help='Supply directory to be read - default: current')
+parser.add_argument('-R', '--recursive', dest='indepth', action='store_true',
+	help='Supply directory to be read - default: current')
 
 args = parser.parse_args()
+print(args)
 dir = args.directory
+indepth = args.indepth
 if not os.path.isdir(dir):
 	print("%s isn't a directory - Exiting" % dir)
 	sys.exit(1)
@@ -67,7 +71,7 @@ pattern = '*.flac'
 dir = dir + '/' + pattern
 
 f_dir = {}
-files = glob.glob(dir)
+files = glob.glob(dir, recursive=indepth)
 for f in files:
 	file = f.split('/')[-1]
 	file_strip = file.split('-')
