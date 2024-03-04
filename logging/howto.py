@@ -2,9 +2,19 @@
 '''
 NAME
 	howto.py	-	How to use logging
+
+	10 DEBUG
+	20 INFO
+	30 WARNING
+	40 ERROR
+	50 CRITICAL
+
+In this example the console will display WARNING or higher, but in the logfile
+everything will be logged. What will be logged depends on logger.getEffectiveLevel()
 '''
 
 import logging
+import time
 
 def printLog(logger, level):
 	logger.debug('This is a debug message - %d' % level)
@@ -13,31 +23,43 @@ def printLog(logger, level):
 	logger.error('This is a error message - %d' % level)
 	logger.critical('This is a critical message - %d' % level)
 
+logFile = 'howto.log'
 if __name__ == '__main__':
-# Setup logging
+	# Setup logging
 	logger = logging.getLogger(__name__)
-	logger.setLevel(logging.WARNING)
+	logger.setLevel(logging.INFO)
 
 	# Logfile log output
-	error_handler = logging.FileHandler('howto.log')
-	error_handler.setLevel(logging.DEBUG)
+	fh = logging.FileHandler(logFile)
+	fh.setLevel(logging.DEBUG)	# Everything will be logged - based on logger.setLevel
 	formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-	error_handler.setFormatter(formatter)
+	fh.setFormatter(formatter)
 
 	# Console log output
 	ch = logging.StreamHandler()
-	ch.setLevel(logging.ERROR)
+	ch.setLevel(logging.WARNING) 	# WARNING or higher will be displayed
 	formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 	ch.setFormatter(formatter)
 	
-	logger.addHandler(error_handler)
+	logger.addHandler(fh)
 	logger.addHandler(ch)
 
 	level = logger.getEffectiveLevel()
+	print('Initial setting for logging: %d' % level)
 	printLog(logger,level)
 
-	print('Changing level to INFO')
-	logger.setLevel('INFO')
+	# Pause for 3 seconds
+	time.sleep(3)
+
+	print('Changing level to DEBUG')
+	logger.setLevel(logging.DEBUG)
 	level = logger.getEffectiveLevel()
 	printLog(logger,level)
 	
+	# Pause for 3 seconds
+	time.sleep(3)
+
+	print('Changing level to ERROR')
+	logger.setLevel('ERROR')
+	level = logger.getEffectiveLevel()
+	printLog(logger,level)
