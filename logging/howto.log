@@ -1,0 +1,7 @@
+2024-03-04 15:55:24,849 - __main__ - WARNING - This is a warning message - 30
+2024-03-04 15:55:24,852 - __main__ - ERROR - This is a error message - 30
+2024-03-04 15:55:24,857 - __main__ - CRITICAL - This is a critical message - 30
+2024-03-04 15:55:24,864 - __main__ - INFO - This is a info message - 20
+2024-03-04 15:55:24,866 - __main__ - WARNING - This is a warning message - 20
+2024-03-04 15:55:24,868 - __main__ - ERROR - This is a error message - 20
+2024-03-04 15:55:24,873 - __main__ - CRITICAL - This is a critical message - 20
