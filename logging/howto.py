@@ -9,24 +9,46 @@ NAME
 	40 ERROR
 	50 CRITICAL
 
-In this example the console will display WARNING or higher, but in the logfile
-everything will be logged. What will be logged depends on logger.getEffectiveLevel()
+DESCRIPTION
+	In this example the console will display WARNING or higher, but in the 
+	logfile everything will be logged. What will be logged depends on 
+	logger.getEffectiveLevel()
+
+USAGE
+	usage: howto.py [-h] [-e ERRORLEVEL] [-f ERRORLOG]
+	
+	optional arguments:
+	  -h, --help            show this help message and exit
+	  -e ERRORLEVEL, --errorLevel ERRORLEVEL
+	                        Set errorlevel for console output
+	  -f ERRORLOG, --errorLog ERRORLOG
+	                        Set logfile for logging output
 '''
 
 import logging
 import time
+import argparse
+import sys
 from mylog import printLog
 
-'''
-def printLog(logger, level):
-	logger.debug('This is a debug message - %d' % level)
-	logger.info('This is a info message - %d' % level)
-	logger.warning('This is a warning message - %d' % level)
-	logger.error('This is a error message - %d' % level)
-	logger.critical('This is a critical message - %d' % level)
-'''
+validLevels = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
 
-logFile = 'howto.log'
+parser = argparse.ArgumentParser()
+parser.add_argument('-e', '--errorLevel', dest='errorLevel', type=str,
+	default='WARNING', help='Set errorlevel for console output')
+parser.add_argument('-f', '--errorLog', dest='errorLog', default='howto.log',
+	help='Set logfile for logging output')
+
+args = parser.parse_args()
+
+logFile = args.errorLog
+errorLevel = args.errorLevel.upper()
+
+if not errorLevel in validLevels:
+	print('%s is not a valid error level' % errorLevel)
+	print('Valid levels are %s' % ', '.join(i for i in validLevels))
+	sys.exit(99)
+
 if __name__ == '__main__':
 	# Setup logging
 	logger = logging.getLogger(__name__)
@@ -40,7 +62,7 @@ if __name__ == '__main__':
 
 	# Console log output
 	ch = logging.StreamHandler()
-	ch.setLevel(logging.WARNING) 	# WARNING or higher will be displayed
+	ch.setLevel(errorLevel) 	# by default WARNING or higher will be displayed
 	formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 	ch.setFormatter(formatter)
 	
