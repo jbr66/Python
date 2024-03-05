@@ -7,8 +7,20 @@ NAME
 
 import logging
 import logging.config
+import yaml
+import sys
 
-logging.config.fileConfig('logging.conf')
+file = 'logging.yaml'
+
+try:
+	with open(file,'r') as f:
+		logconfig = yaml.safe_load(f)
+except Exception as e:
+	print('Error reading %s - %s' % (file,e))
+	sys.exit(1)
+
+#logging.config.fileConfig('logging.conf')
+logging.config.dictConfig(logconfig)
 
 # Create logger
 logger = logging.getLogger('simpleExample')
