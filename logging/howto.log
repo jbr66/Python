@@ -108,3 +108,14 @@
 2024-03-05 10:09:36,710 - __main__ - CRITICAL - This is a critical message - 10
 2024-03-05 10:09:39,719 - __main__ - ERROR - This is a error message - 40
 2024-03-05 10:09:39,722 - __main__ - CRITICAL - This is a critical message - 40
+2024-03-05 19:23:11,587 - __main__ - INFO - This is a info message - 20
+2024-03-05 19:23:11,590 - __main__ - WARNING - This is a warning message - 20
+2024-03-05 19:23:11,596 - __main__ - ERROR - This is a error message - 20
+2024-03-05 19:23:11,601 - __main__ - CRITICAL - This is a critical message - 20
+2024-03-05 19:23:14,609 - __main__ - DEBUG - This is a debug message - 10
+2024-03-05 19:23:14,611 - __main__ - INFO - This is a info message - 10
+2024-03-05 19:23:14,613 - __main__ - WARNING - This is a warning message - 10
+2024-03-05 19:23:14,616 - __main__ - ERROR - This is a error message - 10
+2024-03-05 19:23:14,622 - __main__ - CRITICAL - This is a critical message - 10
+2024-03-05 19:23:17,631 - __main__ - ERROR - This is a error message - 40
+2024-03-05 19:23:17,634 - __main__ - CRITICAL - This is a critical message - 40
