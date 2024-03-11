@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 '''
 Problems with TGW
+
+Run the following command to get all requirements
+	$ pip3 install --user -r requirements.txt
+
 '''
 
 import argparse
