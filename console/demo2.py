@@ -4,7 +4,7 @@ from rich.console import Console
 
 console = Console(width=20)
 
-style = 'bold white on blue'
+style = 'italic bold white on blue'
 
 console.print('Rich', style=style)
 console.print('Rich', style=style, justify='left')
