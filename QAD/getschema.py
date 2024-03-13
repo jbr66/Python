@@ -116,6 +116,8 @@ for table in schema[cfg['database']].keys():
     schema[cfg['database']][table] = get_fields(conn,table)
 
 print(json.dumps(schema, indent=3))
+print
+print(json.dumps(schema[cfg['database']]['vips'], indent=3))
 '''
 for t in schema[cfg['database']].keys():
     print('\nFields for table %s:' % t)
