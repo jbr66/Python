@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 '''
-Example connecting mariadb using Python
+NAME
+    getschema.py    -   Get the schema of a given database
 
 Using config.yaml file:
 
@@ -29,17 +30,17 @@ args        = parser.parse_args()
 config_file = args.file
 
 if not os.path.isfile(config_file):
-    print("File {} could not be found - Exiting".format(config_file))
+    print('File %s could not be found - Exiting' % config_file)
     sys.exit(1)
 
 try:
     with open(config_file, 'r') as file:
         cfg = yaml.safe_load(file)
 except PermissionError:
-    print("Not enough permissions to open file {}".format(config_file))
+    print('Not enough permissions to open file %s' % config_file)
     sys.exit(2)
-except e:
-    print("Failed to open file {}".format(config_file))
+except Exception as e:
+    print('Failed to open file %s - %s' % (config_file, e))
     sys.exit(3)
 
 # Connect to MariaDB Platform
@@ -52,38 +53,52 @@ try:
         database = cfg['database']
     )
 except mariadb.Error as e:
-    print(f"Error connecting to MariaDB Platform {e}")
+    print('Error connecting to MariaDB Platform %s' % e)
     sys.exit(1)
+
+# Define variables
+schema = {}
+tables = {}
 
 # Get cursor
 cur  = conn.cursor()
 
-country = "Net%"
-cur.execute("SELECT country_id, name, area from countries where name like ?", (country,))
+cur.execute('SHOW tables')
 
-print("Query on countries")
-print(20*'-')
-for c, n, a in cur:
-    print(f"CountryId: {c}, Name: {n}, Area: {a}")
-
-cur.execute("SHOW tables")
-
-print("\nTables in {}".format(cfg['database']))
-print(20*'-')
-tables = []
 for t in cur:
-    print("\t{}".format(t[0]))
-    tables.append(t)
+    tables[t[0]] = {}
 
-print("\nFields per table:")
+schema[cfg['database']] = tables
+print('\nTables in %s' % cfg['database'])
 print(20*'-')
-for t in tables:
-    tablename = t[0]
-    print(tablename)
-    print(len(tablename)*'-')
-    sqlstat = "describe " + tablename
-    cur.execute(sqlstat)
+for table in schema[cfg['database']].keys():
+    fields = {}
+    print('\t%s' % table)
+    qry = 'describe %s' % table
+    cur.execute(qry)
     for f, t, n, k, d, e in cur:
-        print(f"\t{f} {t} {n} {k} {d} {e}")
+        fields[f] = {}
+        if '(' in t:
+            type = t.strip().split('(')[0]
+            format = t.strip().split('(')[1][:-1]
+        else:
+            type = t
+            format = ''
+        fields[f]['type'] = type
+        fields[f]['format'] = format
+        fields[f]['null'] = n
+        fields[f]['key'] = k
+        fields[f]['default'] = d
+        fields[f]['extra'] = e
+    schema[cfg['database']][table] = fields
+
+print("\nFields for table countries:")
+print(len('Fields for table countries:')*'-')
+for f in schema[cfg['database']]['countries'].keys():
+    print('Field: %s' % f)
+    print(len('Field: %s' % f)*'-')
+    for k in schema[cfg['database']]['countries'][f].keys():
+        print('%s : %s' % (k,schema[cfg['database']]['countries'][f][k]))
+    print()
 
 conn.close()
