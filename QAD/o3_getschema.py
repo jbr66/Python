@@ -19,6 +19,16 @@ import argparse
 import os, sys
 import glob
 
+map_dt_oem_mdb = [
+        ('character', 'varchar'),
+        ('character', 'text'),
+        ('logical', 'tinyint'),
+        ('integer', 'int'),
+        ('int64', 'bigint'),
+        ('date', 'date'),
+        ('decimal', 'decimal'),
+        ]
+
 def con_mariadb(cfg, mdb):
     '''
     Connect to MariaDb mdb from configfile, will return the connection
@@ -105,6 +115,22 @@ def oem_getfields(file):
 
     return fields
 
+def compare_table(mdb, table):
+    '''
+    Compare the table in both OpenEdge Database and MariaDB
+    It will return a dictionary for each table
+    '''
+    compare = {}
+
+    for f in oeschema[table].keys():
+        if f in schema[mdb][table]:
+            compare[f] = {}
+            compare[f]['type'] = (oeschema[table][f]['type'],schema[mdb][table][f]['type'])
+            compare[f]['format'] = (oeschema[table][f]['format'],schema[mdb][table][f]['format'])
+
+    return compare
+
+
 # Define parameters
 
 parser = argparse.ArgumentParser(
@@ -161,7 +187,8 @@ for t in schema[cfg['database']].keys():
 '''
 
 # Verify tables from OpenEdge with MariaDB
-dir = ('../stage_qadeam', '../stage_qadadm', '../stage_qaddb')
+#dir = ('../stage_qadeam', '../stage_qadadm', '../stage_qaddb')
+dir = ('../stage_qadeam',)
 
 schema_suffix = 'dat'
 index_suffix = 'idx'
@@ -195,3 +222,22 @@ for oetable in notfound:
     for db in ('o3_qaddb', 'o3_sysdb'):
         if oetable in schema[db]:
             print('Found %s in %s' % (oetable, db))
+
+print()
+# Verify OpenEdge tables with tables in MariaDB
+compare = {}
+for oetable in oeschema.keys():
+    if oetable in schema['o3_qaddb']:
+        print('Table in o3_qaddb')
+        mdbname = 'o3_qaddb'
+    elif oetable in schema['o3_sysdb']:
+        print('Table in o3_sysdb')
+        mdbname = 'o3_sysdb'
+
+    compare[oetable] = compare_table(mdbname, oetable)
+
+    for field in compare[oetable].keys():
+        if not compare[oetable][field]['type'] in map_dt_oem_mdb:
+            print('Field %s of %s datatype issue' % (field, oetable))
+
+print(json.dumps(compare, indent=3))
