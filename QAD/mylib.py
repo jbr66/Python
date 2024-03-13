@@ -13,14 +13,28 @@ REVISION HISTORY
 vim: ts=4
 '''
 
-conv_oem_mdb = {
-    'char': 'varchar',
-    'integer': 'int',
-    'decimal': 'decimal'
-    }
+conv_oem_mdb = [
+    ('character', 'varchar'),
+    ('character', 'text'),
+    ('clob', 'longtext'),
+    ('varchar', 'text'),
+    ('double precision', 'double'),
+    ('logical', 'tinyint'),
+    ('integer', 'int'),
+    ('int64', 'bigint'),
+    ('date', 'date'),
+    ('decimal', 'decimal'),
+    ('numeric', 'decimal'),
+    ('real', 'float'),
+    ]
 
 
 if __name__ == '__main__':
-    print(conv_oem_mdb)
-    for k in conv_oem_mdb.keys():
-        print('%s converted to %s' % (k, conv_oem_mdb[k]))
+    print('%40s' % 'Datatypes'.center(40))
+    print('%-20s %-20s' % ('Progress','MariaDB'))
+    print(40*'-')
+    for k,v in conv_oem_mdb:
+        if v == 'text':
+            print('%-20s %-20s when larger than 255' % (k, v))
+        else:
+            print('%-20s %-20s' % (k, v))
