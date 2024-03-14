@@ -45,6 +45,17 @@ map_dt_oem_mdb = [
         ('raw', 'varbinary'),
         ]
 
+'''
+    DataType in MariaDB without format
+'''
+
+dt_no_fmt = [
+        'text',
+        'date',
+        'mediumtext',
+        'longblob',
+        ]
+
 def con_mariadb(cfg, mdb):
     '''
     Connect to MariaDb mdb from configfile, will return the connection
@@ -257,6 +268,7 @@ print()
 # Verify OpenEdge tables with tables in MariaDB
 compare = {}
 for oetable in oeschema.keys():
+    mdbtable = oetable
     if oetable in notfound:
         continue
     if oetable in schema['o3_qaddb']:
@@ -266,8 +278,34 @@ for oetable in oeschema.keys():
 
     compare[oetable] = compare_table(mdbname, oetable, changename)
 
+    if oetable in changename:
+        mdbtable = oetable + '_'
+
     for field in compare[oetable].keys():
+        # Store data in variables
+        oetype = compare[oetable][field]['type'][0]
+        mdbtype = compare[oetable][field]['type'][1]
+        oefmt = compare[oetable][field]['format'][0]
+        mdbfmt = compare[oetable][field]['format'][1]
+
+        # Check existence in MariaDB
+        if not (int(oeschema[oetable][field]['extend']) > 0 or oeschema[oetable][field]['type'] == 'datetime-tz'):
+            # Field is not an extent or is of datatype datetime-tz
+            if not field in schema[mdbname][mdbtable].keys():
+                print('Field %s not found in %s.%s' % (field, mdbname, mdbtable))
+
+        # Check for valid datatype conversion
         if not compare[oetable][field]['type'] in map_dt_oem_mdb:
             print('Field %s of %s.%s datatype issue - %s' % (field, mdbname, oetable, compare[oetable][field]['type']))
 
-#print(json.dumps(compare['Property'], indent=3))
+        # Check format
+        if not oefmt == mdbfmt and not mdbtype in dt_no_fmt:
+            # Differences in format
+            if oetype == 'decimal':
+                if int(oefmt) > int(mdbfmt.split(',')[0]):
+                    print('%s.%s.%s format issue - %s' % (mdbname, oetable, field, compare[oetable][field]['format']))
+            elif int(oefmt) > int(mdbfmt):
+                print('%s.%s.%s format issue - %s' % (mdbname, oetable, field, compare[oetable][field]['format']))
+
+
+#print(json.dumps(compare['rpttmp_mstr'], indent=3))
