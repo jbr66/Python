@@ -30,16 +30,13 @@ import logging
 map_dt_oem_mdb = [
         ('character', 'varchar'),
         ('character', 'text'),
-        ('blob', 'mediumtext'),
         ('clob', 'mediumtext'),
         ('logical', 'tinyint'),
         ('integer', 'int'),
         ('int64', 'bigint'),
         ('date', 'date'),
         ('datetime', 'datetime'),
-        ('datetime-tz', 'datetime'),
         ('decimal', 'decimal'),
-        ('raw', 'mediumtext'),
         ('blob', 'longblob'),
         ('datetime-tz', 'timestamp'),
         ('datetime-tz', 'int'),
@@ -55,6 +52,7 @@ dt_no_fmt = [
         'date',
         'mediumtext',
         'longblob',
+        'timestamp',
         ]
 
 valid_loglevel = [
@@ -187,11 +185,19 @@ parser.add_argument('--loglevel', dest='loglevel', default='INFO',
 parser.add_argument('--logfile', dest='logfile', default='getschema.log',
         help='Provide logfile (default is getschema.log)'
         )
+parser.add_argument('--stage', dest='stage', default='../oeschema',
+        help='Provide stage directory (default is ../oeschema)'
+        )
 
 args        = parser.parse_args()
 config_file = args.file
 loglevel    = args.loglevel.upper()
 logfile     = args.logfile
+stage       = args.stage
+
+if not os.path.isdir(stage):
+    print('Could not find directory %s - Exiting' % stage)
+    sys.exit(1)
 
 if __name__ == '__main__':
 
@@ -276,7 +282,7 @@ if __name__ == '__main__':
     
     # Verify tables from OpenEdge with MariaDB
     #dir = ('../stage_qadeam', '../stage_qadadm', '../stage_qaddb')
-    dir = ('../oeschema',)
+    dir = (stage,)
     
     schema_suffix = 'dat'
     index_suffix = 'idx'
