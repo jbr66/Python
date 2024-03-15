@@ -1,3 +1,6 @@
+" Before implementing this .vimrc execute:
+" git clone https://github.com/gmarik/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+"
 " Defining IDE for Python
 set nocompatible              " required
 filetype off                  " required
