@@ -52,7 +52,7 @@ for s in data.keys():
 		mean = calculateMean(data[s][v])
 		somMean += mean
 		print('| %11s | %5.2f | %3.0f   |' % (v,mean,round(mean,0)))
-	
+
 	print(line)
 	print('| %11s | %5.2f | %3.0f   |' % ('Mean'.center(11),somMean/len(data[s].keys()),round(somMean/len(data[s].keys()),0)))
 	print(line)
