@@ -42,7 +42,7 @@ def get_files(path):
     return(r.stdout.split('\n'))
   else:
     return(0)
-  
+
 '''
   Example:
 
@@ -65,7 +65,8 @@ def create_m3u(path, files):
 
 
 parser = argparse.ArgumentParser(
-               description="Generate playlist for given directory")
+        description="Generate playlist for given directory",
+        epilog='2024 - JeBe-IT')
 parser.add_argument('directory',
                help="provide directory with songs to generate \
                      playlist for")
