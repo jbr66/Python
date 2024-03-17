@@ -33,6 +33,7 @@ def get_files(path):
     return(0)
 '''
 
+
 # v1.1
 def get_files(path):
     cmd = '/bin/ls'
@@ -40,9 +41,10 @@ def get_files(path):
     r = subprocess.run([cmd, path], capture_output=True, text=True)
 
     if len(r.stdout) > 0:
-        return(r.stdout.split('\n'))
+        return r.stdout.split('\n')
     else:
-        return(0)
+        return 0
+
 
 def create_m3u(path, files):
     '''
@@ -62,36 +64,37 @@ def create_m3u(path, files):
     print('#EXTM3U')
     for f in files:
         if ('.mp3' in f) or ('.flac' in f):
-            print('#EXTINF:{}'.format(f))
-            print('{}/{}'.format(path,f))
+            print('#EXTINF:%s' % f)
+            print('%s/%s' % (path, f))
+
 
 parser = argparse.ArgumentParser(
     description="Generate playlist for given directory",
     epilog='2024 - JeBe-IT')
 parser.add_argument('directory',
-    help="provide directory with songs to generate playlist for")
+                    help="provide directory with songs to generate playlist for")
 parser.add_argument('-d', '--debug',
-    help="display debug information",
-    action="store_true")
+                    help="display debug information",
+                    action="store_true")
 parser.add_argument('-v', '--verbosity',
-    action="count", default=0,
-    help="increase output verbosity")
+                    action="count", default=0,
+                    help="increase output verbosity")
 args = parser.parse_args()
 
 # Setting variables
-dir     = args.directory
-debug   = args.debug
+dir = args.directory
+debug = args.debug
 verbose = args.verbosity
-files   = []
+files = []
 
 if debug:
-    print(42*'-')
+    print(42 * '-')
     print(f"Provided parameters for '{__file__}'")
-    #print("Provided parameters for '{}'".format(__file__))
-    print("%-10s: %30s"%('dir',dir))
-    print("%-10s: %30s"%('debug',debug))
-    print("%-10s: %30d"%('verbose',verbose))
-    print(42*'-')
+    # print("Provided parameters for '{}'".format(__file__))
+    print("%-10s: %30s" % ('dir', dir))
+    print("%-10s: %30s" % ('debug', debug))
+    print("%-10s: %30d" % ('verbose', verbose))
+    print(42 * '-')
 
 if verbose >= 2:
     print(f"Running '{__file__}'")
@@ -108,10 +111,10 @@ if not files == 0:
         print(files)
     if verbose >= 2:
         print("Found the following files:")
-        print(80*"-")
+        print(80 * "-")
     for f in files:
         print(f)
-        print(80*"-")
+        print(80 * "-")
         create_m3u(dir, files)
     else:
         print(f"{dir} doesn't contain any files")

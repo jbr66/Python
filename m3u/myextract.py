@@ -8,7 +8,9 @@ import argparse
 import sys
 import subprocess
 
-parser = argparse.ArgumentParser(prog='myextract.py', description='Generate some dummy files for m3u list', epilog='2024 - JeBe-IT')
+parser = argparse.ArgumentParser(prog='myextract.py',
+                                 description='Generate some dummy files for m3u list',
+                                 epilog='2024 - JeBe-IT')
 parser.add_argument('file', help="provide file that needs to be 'extracted'")
 parser.add_argument('-d', dest='subdir', default='data', help="provide directory for storing files")
 
@@ -17,7 +19,7 @@ file = args.file
 subdir = args.subdir
 
 try:
-    with open(file,'r') as f:
+    with open(file, 'r') as f:
         lines = f.readlines()
 
 except Exception as e:
@@ -35,11 +37,11 @@ for line in lines:
     artist = tokens[1].split('-')[0].strip()
     cd = tokens[1].split('-')[1].strip()
     song = tokens[2].strip()
-    if not artist in music:
+    if artist not in music:
         music[artist] = {}
         music[artist][cd] = []
         music[artist][cd].append(song)
-    elif not cd in music[artist]:
+    elif cd not in music[artist]:
         music[artist][cd] = []
         music[artist][cd].append(song)
     else:
@@ -50,19 +52,20 @@ for artist in music.keys():
     for cd in music[artist].keys():
         try:
             if "'" in artist or "'" in cd:
-                cmd = 'mkdir -p %s/"%s"/"%s"' % (subdir,artist,cd)
+                cmd = 'mkdir -p %s/"%s"/"%s"' % (subdir, artist, cd)
             else:
-                cmd = "mkdir -p %s/'%s'/'%s'" % (subdir,artist,cd)
+                cmd = "mkdir -p %s/'%s'/'%s'" % (subdir, artist, cd)
             subprocess.run(cmd, shell=True)
         except Exception as e:
+            print('Error: %s' % e)
             pass
 
         for song in music[artist][cd]:
             try:
-                if not "'" in song:
-                    cmd = "touch %s/'%s'/'%s'/'%s'" % (subdir,artist,cd,song)
+                if "'" not in song:
+                    cmd = "touch %s/'%s'/'%s'/'%s'" % (subdir, artist, cd, song)
                 else:
-                    cmd = 'touch %s/"%s"/"%s"/"%s"' % (subdir,artist,cd,song)
+                    cmd = 'touch %s/"%s"/"%s"/"%s"' % (subdir, artist, cd, song)
                 subprocess.run(cmd, shell=True)
             except Exception as e:
                 print('Failed to generate file %s' % e)
