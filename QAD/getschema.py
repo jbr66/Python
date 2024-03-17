@@ -5,18 +5,20 @@ NAME
 
 Using config.yaml file:
 
-	user: root
-	password: xxxx
-	host: 192.168.1.40
-	port: 3306
-	database: nation
+    user: root
+    password: xxxx
+    host: 192.168.1.40
+    port: 3306
+    database: nation
 '''
 
 import mariadb
 import yaml
 import json
 import argparse
-import os, sys
+import os
+import sys
+
 
 def con_mariadb(cfg):
     '''
@@ -24,16 +26,16 @@ def con_mariadb(cfg):
     '''
     try:
         conn = mariadb.connect(
-            user     = cfg['user'],
-            password = cfg['password'],
-            host     = cfg['host'],
-            port     = cfg['port'],
-            database = cfg['database']
-        )
+            user=cfg['user'],
+            password=cfg['password'],
+            host=cfg['host'],
+            port=cfg['port'],
+            database=cfg['database'])
         return conn
     except mariadb.Error as e:
         print('Error connecting to MariaDB Platform %s' % e)
         sys.exit(1)
+
 
 def get_tables(conn):
     '''
@@ -42,7 +44,7 @@ def get_tables(conn):
 
     tables = {}
     # Get cursor
-    _cur  = conn.cursor()
+    _cur = conn.cursor()
 
     _cur.execute('SHOW tables')
 
@@ -51,11 +53,11 @@ def get_tables(conn):
 
     return tables
 
+
 def get_fields(conn, table):
     '''
     Returns dictionary of fields for given table
     '''
-
     fields = {}
     # Get cursor
     _cur = conn.cursor()
@@ -79,18 +81,17 @@ def get_fields(conn, table):
 
     return fields
 
+
 # Define parameters
 
 parser = argparse.ArgumentParser(
-        description="Query mariadb based on configfile"
-        )
+    description="Query mariadb based on configfile")
 parser.add_argument('file',
-        help="provide yaml based configfile"
-        )
+                    help="provide yaml based configfile")
 
-args        = parser.parse_args()
+args = parser.parse_args()
 config_file = args.file
-schema      = {}
+schema = {}
 
 if not os.path.isfile(config_file):
     print('File %s could not be found - Exiting' % config_file)
@@ -113,7 +114,7 @@ conn = con_mariadb(cfg)
 schema[cfg['database']] = get_tables(conn)
 
 for table in schema[cfg['database']].keys():
-    schema[cfg['database']][table] = get_fields(conn,table)
+    schema[cfg['database']][table] = get_fields(conn, table)
 
 print(json.dumps(schema, indent=3))
 print
