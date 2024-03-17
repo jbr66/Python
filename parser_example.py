@@ -1,10 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import argparse
 
 parser = argparse.ArgumentParser(prog='parser_example',
-                    description='Process some integers.', 
-                    epilog='Created by JBR')
+                                 description='Process some integers.',
+                                 epilog='Created by JBR')
 parser.add_argument('integers', metavar='N', type=int, nargs='+',
                     help='an integer for the accumulator')
 parser.add_argument('--sum', dest='accumulate', action='store_const',
