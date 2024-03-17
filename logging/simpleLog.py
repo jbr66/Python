@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 '''
 NAME
-	simpleLog.py	-	Setup logging with config file
+    simpleLog.py    -    Setup logging with config file
 
 '''
 
@@ -13,13 +13,13 @@ import sys
 file = 'logging.yaml'
 
 try:
-	with open(file,'r') as f:
-		logconfig = yaml.safe_load(f)
+    with open(file, 'r') as f:
+        logconfig = yaml.safe_load(f)
 except Exception as e:
-	print('Error reading %s - %s' % (file,e))
-	sys.exit(1)
+    print('Error reading %s - %s' % (file, e))
+    sys.exit(1)
 
-#logging.config.fileConfig('logging.conf')
+# logging.config.fileConfig('logging.conf')
 logging.config.dictConfig(logconfig)
 
 # Create logger
