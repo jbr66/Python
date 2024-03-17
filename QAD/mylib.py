@@ -17,6 +17,7 @@ conv_oem_mdb = [
     ('character', 'varchar'),
     ('character', 'text'),
     ('clob', 'longtext'),
+    ('blob', 'longblob'),
     ('varchar', 'text'),
     ('double precision', 'double'),
     ('logical', 'tinyint'),
@@ -25,15 +26,14 @@ conv_oem_mdb = [
     ('date', 'date'),
     ('decimal', 'decimal'),
     ('numeric', 'decimal'),
-    ('real', 'float'),
-    ]
+    ('real', 'float'),]
 
 
 if __name__ == '__main__':
     print('%40s' % 'Datatypes'.center(40))
-    print('%-20s %-20s' % ('Progress','MariaDB'))
-    print(40*'-')
-    for k,v in conv_oem_mdb:
+    print('%-20s %-20s' % ('Progress', 'MariaDB'))
+    print(40 * '-')
+    for k, v in conv_oem_mdb:
         if v == 'text':
             print('%-20s %-20s when larger than 255' % (k, v))
         else:
