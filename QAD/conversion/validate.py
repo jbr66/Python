@@ -7,7 +7,7 @@ NAME
 
 import mariadb
 # import yaml
-import json
+# import json
 # import argparse
 # import sys
 import os
@@ -275,6 +275,52 @@ def searchTable(cfg, oetables, schema, logger):
     return notfound, changename
 
 
+def collectfiles(cfg, logger, suffix):
+    '''
+    Collect the files from the stage directory based on suffix
+    and will return an array of files (fysical files) and tables
+    '''
+
+    try:
+        stage = cfg['stage']
+        process_entire_database = eval(cfg['process_entire_database'])
+        exclude_tables = cfg['exclude_tables']
+        include_tables = cfg['include_tables']
+    except KeyError as e:
+        logger.error(f'YAML file is missing key {e}')
+        return False, False
+
+    logger.info('reading from %s directory' % stage)
+
+    if not os.path.isdir(stage):
+        logger.error('Could not find directory %s - Exiting' % stage)
+        return False, False
+
+    files = []
+    newfiles = []
+    tables = []
+    tablelist = []
+    exclude_list = []
+
+    if process_entire_database is False:
+        tablelist = include_tables.split(',')
+        logger.info('Validating only tables: %s' % ', '.join(tablelist))
+    else:
+        exclude_list = exclude_tables.split(',')
+
+    files = glob.glob('%s/*.%s' % (stage, suffix))
+    for file in files:
+        table = file.strip().split('/')[-1].split('.')[0]
+        if process_entire_database is True and table not in exclude_list:
+            tables.append(table)
+            newfiles.append(file)
+        elif process_entire_database is False and table in tablelist:
+            tables.append(table)
+            newfiles.append(file)
+
+    return newfiles, tables
+
+
 def validateData(cfg, logger, operation):
     '''
     Validate schema and data
@@ -292,23 +338,14 @@ def validateData(cfg, logger, operation):
 
     try:
         stage = cfg['stage']
-        process_entire_database = eval(cfg['process_entire_database'])
-        exclude_tables = cfg['exclude_tables']
-        include_tables = cfg['include_tables']
-        # quit_on_table_error = cfg['quit_on_table_error']
-        # large_clob_tables = cfg['large_clob_tables']
         mdbqad = cfg['mdbname']
-        # mdbcust = cfg['mdbname_cust']
         mdbsys = cfg['mdbname_sys']
     except KeyError as e:
         logger.error(f'YAML file is missing key {e}')
         return False
 
-    if not os.path.isdir(stage):
-        logger.error('Could not find directory %s - Exiting' % stage)
-        return False
-
-    logger.info('reading from %s directory' % stage)
+    # Collect files from 'stage' directory
+    (oefiles, oetables) = collectfiles(cfg, logger, 'dat')
 
     # Build schema for MariaDb
     schema = {}
@@ -327,34 +364,15 @@ def validateData(cfg, logger, operation):
 
         conn.close()
 
-    # Verify tables from OpenEdge with MariaDB
-    # dir = ('../stage_qadeam', '../stage_qadadm', '../stage_qaddb')
-    dir = (stage,)
-
-    schema_suffix = 'dat'
-    # index_suffix = 'idx'
-    # data_suffix = 'dump'
-
-    # Get schema for OpenEdge (oe)
-    tablelist = []
-    if not process_entire_database:
-        tablelist = include_tables.split(',')
-        logger.info('Validating only tables: %s' % ', '.join(tablelist))
-
-    oetables = []
+    # Build schema for OpenEdge (oe)
     oeschema = {}
-    for d in dir:
-        oefiles = glob.glob(d + '/*.%s' % schema_suffix)
-        for oefile in oefiles:
-            table = oefile.split('/')[-1].split('.')[0]
-            if process_entire_database is True or table in tablelist:
-                fields = oem_getfields(oefile, logger)
-                if isinstance(fields, bool):
-                    if fields is False:
-                        return False
-                if table not in exclude_tables.split(','):
-                    oetables.append(table)
-                    oeschema[table] = fields
+    for oefile in oefiles:
+        table = oefile.split('/')[-1].split('.')[0]
+        fields = oem_getfields(oefile, logger)
+        if isinstance(fields, bool):
+            if fields is False:
+                return False
+        oeschema[table] = fields
 
     (notfound, changename) = searchTable(cfg, oetables, schema, logger)
 
@@ -441,7 +459,7 @@ def validateData(cfg, logger, operation):
         logger.info('Not found in MariaDB: %s' % ', '.join(notfound))
     logger.info('errors: %d warnings: %d' % (nr_errors, nr_warnings))
 
-    # Turn of console logging
+    # Turn off console logging
     logger.removeHandler(ch)
 
     # print(json.dumps(oeschema, indent=3))
@@ -465,10 +483,6 @@ def validateIndex(cfg, logger, operation):
     logger.info('*** %s ***' % operation)
 
     try:
-        stage = cfg['stage']
-        process_entire_database = eval(cfg['process_entire_database'])
-        exclude_tables = cfg['exclude_tables']
-        include_tables = cfg['include_tables']
         mdbqad = cfg['mdbname']
         mdbsys = cfg['mdbname_sys']
         idxprefix = cfg['idxprefix']
@@ -476,11 +490,8 @@ def validateIndex(cfg, logger, operation):
         logger.error(f'YAML file is missing key {e}')
         return False
 
-    if not os.path.isdir(stage):
-        logger.error('Could not find directory %s - Exiting' % stage)
-        return False
-
-    logger.info('reading from %s directory' % stage)
+    # Collect files from 'stage' directory
+    (oefiles, oetables) = collectfiles(cfg, logger, 'idx')
 
     # Build schema for MariaDb
     schema = {}
@@ -494,79 +505,61 @@ def validateIndex(cfg, logger, operation):
         # Built schema
         schema[db] = mdb_gettables(conn)
 
-    index_suffix = 'idx'
-    # data_suffix = 'dump'
+    (notfound, changename) = searchTable(cfg, oetables, schema, logger)
 
-    # Get indexes for OpenEdge (oe)
-    dir = (stage, )
-    tablelist = []
-    if not process_entire_database:
-        tablelist = include_tables.split(',')
-        logger.info('Validating only tables: %s' % ', '.join(tablelist))
-
-    oetables = []
     oeidx = {}
     mdbidx = {}
     nr_warnings = 0
     nr_errors = 0
-    for d in dir:
-        oefiles = glob.glob(d + '/*.%s' % index_suffix)
-        for oefile in oefiles:
-            oetables.append(oefile.split('/')[-1].split('.')[0])
+    for oefile in oefiles:
+        found = False
+        oetable = oefile.split('/')[-1].split('.')[0]
+        indexes = oem_getidxs(oefile, logger)
+        if isinstance(indexes, bool):
+            if indexes is False:
+                return False
+        oeidx[oetable] = indexes
 
-        (notfound, changename) = searchTable(cfg, oetables, schema, logger)
+        for db in (mdbqad, mdbsys):
+            if oetable in changename:
+                mdbtable = oetable + '_'
+            else:
+                mdbtable = oetable
+            if mdbtable in schema[db]:
+                mdbname = db
+                found = True
 
-        for oefile in oefiles:
-            found = False
-            oetable = oefile.split('/')[-1].split('.')[0]
-            if process_entire_database is True or oetable in tablelist:
-                indexes = oem_getidxs(oefile, logger)
-                if isinstance(indexes, bool):
-                    if indexes is False:
-                        return False
-                if oetable not in exclude_tables.split(','):
-                    oeidx[oetable] = indexes
+        if found is True:
+            mdbidx[mdbtable] = mdb_getidxs(conn, mdbname, mdbtable)
 
-                for db in (mdbqad, mdbsys):
-                    if oetable in changename:
-                        mdbtable = oetable + '_'
-                    else:
-                        mdbtable = oetable
-                    if mdbtable in schema[db]:
-                        mdbname = db
-                        found = True
+            # Check number of indexes
+            if not len(oeidx[oetable].keys()) == len(mdbidx[mdbtable].keys()):
+                logger.error('Number of indexes are not the same for %s (%d, %d)' %
+                             (oetable, len(oeidx[oetable].keys()),
+                              len(mdbidx[mdbtable].keys())))
+                nr_warnings += 1
 
-                if found is True:
-                    mdbidx[mdbtable] = mdb_getidxs(conn, mdbname, mdbtable)
-
-                    # Check number of indexes
-                    if not len(oeidx[oetable].keys()) == len(mdbidx[mdbtable].keys()):
-                        logger.error('Number of indexes are not the same for %s (%d, %d)' %
-                                     (oetable, len(oeidx[oetable].keys()),
-                                      len(mdbidx[mdbtable].keys())))
-                        nr_warnings += 1
-
-                    # Check indexes
-                    for k in oeidx[oetable].keys():
-                        if k == 'FWDPRIMARY':
-                            if 'PRIMARY' not in mdbidx[mdbtable].keys():
-                                logger.error('Missing primary index for table %s' %
-                                             oetable)
-                                nr_errors += 1
-                        elif (idxprefix + k).lower() not in mdbidx[mdbtable].keys():
-                            logger.warning('Missing index %s for table %s' % (k,
-                                                                              oetable))
-                            nr_errors += 1
-                else:
-                    logger.warning('Table %s not found in MariaDB' % oetable)
-                    nr_warnings += 1
+            # Check indexes
+            for k in oeidx[oetable].keys():
+                if k == 'FWDPRIMARY':
+                    if 'PRIMARY' not in mdbidx[mdbtable].keys():
+                        logger.error('Missing primary index for table %s' %
+                                     oetable)
+                        nr_errors += 1
+                elif (idxprefix + k).lower() not in mdbidx[mdbtable].keys():
+                    logger.warning('Missing index %s for table %s' % (k,
+                                                                      oetable))
+                    nr_errors += 1
+        else:
+            logger.warning('Table %s not found in MariaDB' % oetable)
+            nr_warnings += 1
 
     # print(json.dumps(mdbidx, indent=3))
     # print(json.dumps(oeidx, indent=3))
     # print(json.dumps(schema[mdbsys], indent=3))
     logger.info('errors: %d warnings: %d' % (nr_errors, nr_warnings))
 
-    # Turn of console logging
+    # Turn off console logging
     logger.removeHandler(ch)
 
     return True
