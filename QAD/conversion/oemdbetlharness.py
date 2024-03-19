@@ -28,6 +28,7 @@ include_tables pointing to distinct subsets of tables
 
 import sys
 import qadoemdbetl
+import validate
 # import os
 import yaml
 import argparse
@@ -136,7 +137,7 @@ if __name__ == '__main__':
         if 'load' in line:
             conn = True
 
-    if cfg['process_entire_database'] is True:
+    if eval(cfg['process_entire_database']) is True:
         print('On the entire %s/%s database' % (cfg['oedbpath'], cfg['oedbname']))
     else:
         print('On the following tables in database %s/%s: %s' % (
@@ -242,9 +243,16 @@ if __name__ == '__main__':
             sys.exit(0)
 
     if 'validateData' in process_functions:
-        result = qadoemdbetl.validateData
+        result = validate.validateData(cfg, logger, 'validateData')
         if result is False:
             print('Error in validateData, see error log, exiting now')
+            elapsed_time(start_time)
+            sys.exit(0)
+
+    if 'validateIndex' in process_functions:
+        result = validate.validateIndex(cfg, logger, 'validateIndex')
+        if result is False:
+            print('Error in validateIndex, see error log, exiting now')
             elapsed_time(start_time)
             sys.exit(0)
 
