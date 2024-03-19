@@ -242,8 +242,8 @@ if __name__ == '__main__':
             elapsed_time(start_time)
             sys.exit(0)
 
-    if 'validateData' in process_functions:
-        result = validate.validateData(cfg, logger, 'validateData')
+    if 'validateSchema' in process_functions:
+        result = validate.validateData(cfg, logger, 'validateSchema')
         if result is False:
             print('Error in validateData, see error log, exiting now')
             elapsed_time(start_time)
@@ -253,6 +253,13 @@ if __name__ == '__main__':
         result = validate.validateIndex(cfg, logger, 'validateIndex')
         if result is False:
             print('Error in validateIndex, see error log, exiting now')
+            elapsed_time(start_time)
+            sys.exit(0)
+
+    if 'validateSequence' in process_functions:
+        result = validate.validateSequence(cfg, logger, 'validateSequence')
+        if result is False:
+            print('Error in validateSequence, see error log, exiting now')
             elapsed_time(start_time)
             sys.exit(0)
 

@@ -90,6 +90,26 @@ def mdb_gettables(conn):
     return tables
 
 
+def mdb_getsequences(conn, db, logger):
+    '''
+    Returns list of sequences
+    '''
+
+    sequence = []
+    qry = 'select table_name from information_schema.tables ' + \
+        "where table_schema = '" + db + "' and table_type = 'sequence'"
+
+    logger.info('query: %s' % qry)
+    _cur = conn.cursor()
+
+    _cur.execute(qry)
+
+    for s in _cur:
+        sequence.append(s[0])
+
+    return sequence
+
+
 def mdb_getfields(conn, table):
     '''
     Returns dictionary of fields for given table
@@ -186,6 +206,28 @@ def oem_getfields(file, logger):
         fields[tokens[1]]['default'] = tokens[5]
 
     return fields
+
+
+def oem_getsequences(file, logger):
+    '''
+    Get the sequences from an OpenEdge database using '<dbname>.sequences' file
+    '''
+
+    sequences = []
+    try:
+        with open(file, 'r') as f:
+            lines = f.readlines()
+    except Exception as e:
+        logger.error('Can not read file %s - %s' % (file, e))
+        return False
+
+    for line in lines:
+        line = line.strip()
+        tokens = line.split(',')
+        if not tokens[0] == '999':
+            sequences.append(tokens[1])
+
+    return sequences
 
 
 def oem_getidxs(file, logger):
@@ -321,9 +363,9 @@ def collectfiles(cfg, logger, suffix):
     return newfiles, tables
 
 
-def validateData(cfg, logger, operation):
+def validateSchema(cfg, logger, operation):
     '''
-    Validate schema and data
+    Validate schema (tables and fields)
     '''
 
     # Console log output
@@ -561,5 +603,58 @@ def validateIndex(cfg, logger, operation):
 
     # Turn off console logging
     logger.removeHandler(ch)
+
+    return True
+
+
+def validateSequence(cfg, logger, operation):
+    '''
+    Use the following query to get the sequences in MariaDB
+        select table_name
+        from information_schema.tables
+        where (table_schema = 'qaddb' or table_schema = 'sysdb')
+            and table_type = 'sequence';
+    '''
+
+    # Console log output
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)     # by default DEBUG or higher will be displayed
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='[%X]')
+    ch.setFormatter(formatter)
+
+    logger.addHandler(ch)
+
+    logger.info('*** %s ***' % operation)
+
+    try:
+        stage = cfg['stage']
+        mdbqad = cfg['mdbname']
+        mdbsys = cfg['mdbname_sys']
+    except KeyError as e:
+        logger.error(f'YAML file is missing key {e}')
+        return False
+
+    # Get sequences from MariaDB
+    sequences = []
+    for db in (mdbqad, mdbsys):
+        # Connect to MariaDB Platform
+        conn = con_mariadb(cfg, db, logger)
+        if isinstance(conn, bool):
+            if conn is False:
+                return False
+
+        # Get sequences
+        sequences += mdb_getsequences(conn, db, logger)
+
+    # Get OpenEdge sequences
+    oeseq = []
+    files = glob.glob(stage + '/*.sequences')
+    for file in files:
+        oeseq += oem_getsequences(file, logger)
+
+    # Check if OE sequences are defined in MariaDB
+    for s in oeseq:
+        if s not in sequences:
+            logger.warning('Sequence %s not defined in MariaDB' % s)
 
     return True
