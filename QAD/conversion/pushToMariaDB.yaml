@@ -1,0 +1,29 @@
+MariaDB :
+   database : mfgdb
+   user : root
+   password : 1Adelaide01
+   port : 3306
+   host : localhost
+   stopOnDuplicate : False
+   stopOnError : True   
+Cassandra :
+   host : localhost
+   keyspace : cdc
+   port : 9042   
+   username :
+   password :
+   ignoreHighWater : False   
+source :
+   host : ip-10-0-0-187
+   qadenv : production
+   qadsrcdb : mfgdb
+log:
+   defaultlevel : INFO
+   logfile : /dr01/cdc/push.log
+runlimit : 1000
+daemonMode : True
+daemonPoll : 10
+
+
+   
+   

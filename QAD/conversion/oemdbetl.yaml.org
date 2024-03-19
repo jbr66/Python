@@ -1,0 +1,142 @@
+# loglevel can be INFO or ERROR
+loglevel: ERROR
+logerror: etl.error
+logfile: etl.log
+gc_compat: False
+gc_start: 10000
+targetschema: public
+drop_table_if_exists: True
+etl: True
+stage: stage
+fwd_index_name: FWDPRIMARY
+fwd_index_key: recid
+fwd_index_field: recid;int64;9999999999;0;1;yes;8
+fwd_sequence: p2j_id_generator_sequence
+idxsuffix: None
+idxprefix: idx__
+# note there are no current extent fields in QAD with datetime or datetime-tz so the conversion logic will not 
+# process these datetime in the extend field denormalization logic
+datetime_index_suffix: _offset
+process_entire_database: False
+quit_on_table_error: True
+# supported process_functions :   extractSchema,extractIndex,extractData,extactSequence,validateData,loadSchema,loadData,loadSequence
+#process_functions: extractSchema#
+# process_functions: extractSchema,extractIndex,extractSequence,extractData
+process_functions: extractSchema,extractIndex
+# only handles include_tables if process_entire_database is False
+#include_tables: ad_mstr,Company,UserSession
+#include_tables: Company,ad_mstr,so_mstr,qad_wkfl
+#include_tables: ad_mstr,Company,UserSession,AccessControlEntry,AddressType,vuf_det,vwj_det
+include_tables: Document,EntityMapping
+exclude_tables: module-fincore,module-mfgcoreplus,cdc_det,fcInstance,DistributedTransaction,DistributedTransactionData,DistributedTransactionResource,ItemStatusRestrictedTransaction,ApprovalCfgFld
+dlc: /tech/progress/dlc11714
+large_clob_tables: Document,EntityMapping,EntityMetaData,EventHandler,ServerScript,StoredView,ViewMetaData,ViewResourceMetaData
+oedbpath: oe/db
+oedbname: qaddb
+oedbuser: None
+oedbpassword: None
+pfparams: '-cpinternal utf-8 -cpstream utf-8 -NL -yr4def -d ymd -ServerType 4gl -cpcoll ICU-UCA -b'
+mdbname: qaddb
+mdbuser: mfg
+mdbpassword: qad
+mdbport: 3306
+mdbhost: 172.23.2.221
+encoding: utf-8
+text_to_varchar_cutoff: 512
+maxindexwidth_error: 3072
+maxindexwidth_warn: 2000
+format_default: 32
+format_multiplier: 1.5
+create_mdb: False
+# 3072 / 4 for utf8mb4
+# When using dynamic/compressed innoDB rowformat max_length is 3072
+# When using redundant/compact innoDB rowformat max_length is 768
+# select @@innodb_default_row_format;
+max_index_length: 768
+#max_index_length: 3072
+max_keys: 64
+default_byte_pad: 8
+mandatory_to_not_null: True
+stop_on_duplicate: True
+stop_on_error: True
+require_empty_table: True
+# skip table only is checked if table not empty and require_empty_table is true
+skip_table_with_data: True
+mappings:
+  character: varchar
+  extent: json
+  int: integer
+  integer: integer
+  int64: bigint
+  recid: bigint
+  logical: boolean
+  date: date
+  decimal: decimal(50,10)
+  clob: mediumtext
+  lob: mediumtext
+  blob: mediumtext
+  raw: mediumtext
+  datetime-tz: datetime
+  datetime: datetime
+  list: text
+  listd: text
+# ABL filename looks in current working directory unless qualified 
+ablcopy: '\copy \"#TABLENAME#\" from #DUMPNAME# delimiter #DELIMITER# CSV HEADER'
+# need to consider how we add the data for new primary key.  Generate at extract or load on new?  probably load on new using the index there
+abltables: database_conversion/abltables.p
+extractSchema: database_conversion/ablschema.p
+# need to modify code to add new FWD index and not list any existing as primary
+extractIndex: database_conversion/ablindex.p
+extractSequence : database_conversion/ablsequence.p
+extractData: database_conversion/abldata.p
+extent_fields: pt_same_days;10,pt_invent_days;10,ad_edi_ctrl;5,cm__qad04;3,cm_slspsn;4,abs_doc_data;5,AIMCharFld;15,AIMDecFld;15,AIMDateFld;4,ar_xcomm_pct;2,ar_comm_pct;4,ar_slspsn;4,ar_comm_amt;4,ar_base_comm_amt;4,aud_old_data;15,aud_new_data;15,calm_wdays;7,calm_hours;7,calm_shifts;7,cd_cmmt;15,cmt_cmmt;15,cph_qty;12,cph_sales;12,cph_cost;12,cph__dec01;12,cph__dec02;12,dep_canrun;15,dpc_acq_pct;4,dpc_rt_pct;4,dpr_eq;15,dss__qad05;2,ecm_cmmt;5,ega_calls;7,ega_hours;7,ega_avail_hours;7,egc__qadc05;4,egc__qadc06;4,egd_days;8,egd_end_time;8,egd_start_time;8,egd_mid_etime;8,egd_mid_stime;8,egw_calls;7,egw_avail_hours;7,egw_hours;7,es_doc_desc;7,es_doc_exec;7,es_doc_printed;7,es_doc_printit;7,es_doc_printer;7,es_doc_paged;7,esh_end_time;8,esh_start_time;8,esh_days;8,esh_mid_etime;8,esh_mid_stime;8,eus_etime;7,eus_stime;7,eus_mid_etime;7,eus_mid_stime;7,eus_days;7,fcs_fcst_qty;52,fcs_sold_qty;52,fcs_pr_fcst;52,fcs_abnormal;52,ff_his_yr;5,ff_orig_fc;24,ff_adj_fc;24,fh_rlup_pct;52,flp_prod_act;52,flp_prod_fcst;52,flp__dec03;52,flp__dec04;52,fp1_bklg_act;52,fp1_bklg_fcst;52,fp1_cost_act;52,fp1_cost_fcst;52,fp2_inv_act;52,fp2_inv_fcst;52,fp2_ord_act;52,fp2_ord_fcst;52,fp3_prod_act;52,fp3_prod_fcst;52,fp3_ship_act;52,fp3_ship_fcst;52,fpc_amt;15,fpc_max_price;15,fpc_min_qty;15,fslp_prod_fcst;52,fslp_prod_act;52,fslp__dec03;52,fslp__dec04;52,fsp1_bklg_act;52,fsp1_bklg_fcst;52,fsp1_cost_act;52,fsp1_cost_fcst;52,fsp2_inv_act;52,fsp2_inv_fcst;52,fsp2_ord_act;52,fsp2_ord_fcst;52,fsp3_prod_act;52,fsp3_prod_fcst;52,fsp3_ship_act;52,fsp3_ship_fcst;52,genfldd_charvalues;25,genfldd_decimalvalues;25,genfldd_integervalues;25,genfldd_datevalues;25,genfldd_logicalvalues;25,gr_qtr_lbl;4,grcd_label;3,grcd_calc;5,gri_text_ix;3,gri_ovr_code;5,gri_ovr_type;5,gric_label;3,grid_text;5,grrd_text;5,grrd_calc;5,grx_text_ix;3,idh_comment;5,idh_xslspsn;3,idh_xcomm_pct;2,idh_slspsn;4,idh_comm_pct;4,idh_cum_date;4,idh_cum_qty;4,idh_curr_rlse_id;3,idh_start_eff;4,idh_end_eff;4,ih_xslspsn;2,ih_xcomm_pct;2,ih_tax_pct;3,ih__qad05;2,ih_comm_pct;4,ih_slspsn;4,ItemOwner;4,Percentage;4,kbc_time_adj;5,knbdd_card_cmmt_page;5,MsgText;15,msg_explanation;11,pac_amt;4,pac_apr_by;4,SameDays;10,InventDays;10,pc_min_qty;15,pc_amt;15,pc_max_price;10,pcc_pco_pre;12,pcc_next_pco;12,pgm_cmmt;20,pjd_comm_pct;4,pjd_slspsn;4,mfgpost_com;5,po_tax_pct;3,pod__qad04;5,pod_cum_qty;4,pod_cum_date;4,pod_curr_rlse_id;3,pod_start_eff;4,pod_end_eff;4,pp_ship_fcst;12,pp_ship_act;12,pp_ord_fcst;12,pp_ord_act;12,pp_inv_act;12,pp_bklg_act;12,pp_cost_fcst;12,pp_cost_act;12,pp_prod_fcst;12,pp_prod_act;12,prh_curr_rlse_id;3,prj_comm_pct;4,prj_slspsn;4,pti_same_days;10,pti_invent_days;10,qad_charfld;15,qad_decfld;15,qad_datefld;4,qad_logfld;15,qad_charfld1;15,qad_intfld;15,qo_xslspsn;2,qo_xcomm_pct;2,qo_tax_pct;3,qo__qad05;2,qo_comm_pct;4,qo_slspsn;4,qod__qad01;5,qod_xslspsn;3,qod_comm_pct;2,qod_slspsn;4,rmd_comment;5,rqa_alt_apr;2,rqd_oot_extra;8,sa__qadc05;2,sa_xcomm_pct;2,sa_tax_pct;3,sa_comm_pct;4,sa_slspsn;4,sac_trl_tax;3,sac_trl_ntax;3,sad_comment;5,sad_xslspsn;3,sad_xcomm_pct;2,sad_slspsn;4,sad_comm_pct;4,sadh_comment;5,sadh_comm_pct;4,sadh_slspsn;4,sah_xcomm_pct;2,sah_xslspsn;2,sah_tax_pct;3,sah_comm_pct;4,sah_slspsn;4,sch_lr_asn;10,sch_lr_date;10,sch_lr_qty;10,sch_lr_cum_qty;10,sch_lr_time;10,shm_ship_day;7,shm_rec_day;7,shop_wdays;7,shop_hours;7,shop_shifts;7,shtr__qad05;2,sim_canrun;15,so_xslspsn;2,so_xcomm_pct;2,so_tax_pct;3,so__qad05;2,so_slspsn;4,so_comm_pct;4,soc_ntaxdesc;10,soc_trl_tax;3,soc_trl_ntax;3,sod_comment;5,sod_xslspsn;3,sod_xcomm_pct;2,sod_cum_qty;4,sod_cum_date;4,sod_slspsn;4,sod_comm_pct;4,sod_curr_rlse_id;3,sod_start_eff;4,sod_end_eff;4,sod_cum_time;4,sph_sales;12,sph_cost;12,sph_quota;12,sph__dec01;12,sph__dec02;12,sro_cmmt;16,sro_tax_pct;3,sv_days;7,sv_stime;8,sv_etime;8,sv_mid_etime;8,sv_mid_stime;8,tax_tax_pct;3,tax_acct;3,tax_cc;3,taxd_taxamt;3,taxd_ntaxamt;10,te_pgm_msgs;10,tr_slspsn;4,tx2__qadc01;2,tx2__qadc02;2,tx2d__qadd01;3,tx2d__qadd02;10,usrw_charfld;15,usrw_decfld;15,usrw_datefld;4,usrw_logfld;15,usrw_intfld;15,vo_tax_pct;3,AIMCharFld;15,aud_old_data;15,aud_new_data;15,cd_cmmt;15,cmt_cmmt;15,dep_canrun;15,dpr_eq;15,MsgText;15,msg_explanation;11,pcc_pco_pre;12,qad_charfld;15,qad_charfld1;15,sch_lr_asn;10,sim_canrun;15,soc_ntaxdesc;10,sro_cmmt;16,te_pgm_msgs;10,usrw_charfld;15,genfldd_charvalues;25,ih_xslspsn;2,pgm_cmmt;20,qo_xslspsn;2,rqa_alt_apr;2,sah_xslspsn;2,sa__qadc05;2,so_xslspsn;2,tx2__qadc01;2,tx2__qadc02;2,grcd_label;3,gric_label;3,idh_xslspsn;3,idh_curr_rlse_id;3,pod_curr_rlse_id;3,prh_curr_rlse_id;3,qod_xslspsn;3,sac_trl_tax;3,sac_trl_ntax;3,sad_xslspsn;3,soc_trl_tax;3,soc_trl_ntax;3,sod_xslspsn;3,sod_curr_rlse_id;3,tax_acct;3,tax_cc;3,ar_slspsn;4,cm_slspsn;4,egc__qadc06;4,gr_qtr_lbl;4,idh_slspsn;4,ih_slspsn;4,ItemOwner;4,pac_apr_by;4,pjd_slspsn;4,prj_slspsn;4,qod_slspsn;4,qo_slspsn;4,sad_slspsn;4,sadh_slspsn;4,sah_slspsn;4,sa_slspsn;4,sod_slspsn;4,so_slspsn;4,tr_slspsn;4,abs_doc_data;5,ad_edi_ctrl;5,ecm_cmmt;5,grcd_calc;5,grid_text;5,gri_ovr_code;5,gri_ovr_type;5,grrd_text;5,grrd_calc;5,idh_comment;5,kbc_time_adj;5,pod__qad04;5,mfgpost_com;5,qod__qad01;5,rmd_comment;5,sad_comment;5,sadh_comment;5,sod_comment;5
+extent_special: qad_charfld1
+extent_qad_charfld1: qad_charfld111,qad_charfld122,qad_charfld133,qad_charfld144,qad_charfld155,qad_charfld16,qad_charfld17,qad_charfld18,qad_charfld19,qad_charfld110,qad_charfld1116,qad_charfld112,qad_charfld113,qad_charfld114,qad_charfld115
+reserved_words: ACCESSIBLE,ADD,ALL,ALTER,ANALYZE,AND,AS,ASC,ASENSITIVE,BEFORE,BETWEEN,BIGINT,BINARY,BLOB,BOTH,BY,CALL,CASCADE,CASE,CHANGE,CHAR,CHARACTER,CHECK,COLLATE,COLUMN,CONDITION,CONSTRAINT,CONTINUE,CONVERT,CREATE,CROSS,CURRENT_DATE,CURRENT_ROLE,CURRENT_TIME,CURRENT_TIMESTAMP,CURRENT_USER,CURSOR,DATABASE,DATABASES,DAY_HOUR,DAY_MICROSECOND,DAY_MINUTE,DAY_SECOND,DEC,DECIMAL,DECLARE,DEFAULT,DELAYED,DELETE,DELETE_DOMAIN_ID,DESC,DESCRIBE,DETERMINISTIC,DISTINCT,DISTINCTROW,DIV,DO_DOMAIN_IDS,DOUBLE,DROP,DUAL,EACH,ELSE,ELSEIF,ENCLOSED,ESCAPED,EXCEPT,EXISTS,EXIT,EXPLAIN,FALSE,FETCH,FLOAT,FLOAT4,FLOAT8,FOR,FORCE,FOREIGN,FROM,FULLTEXT,GENERAL,GRANT,GROUP,HAVING,HIGH_PRIORITY,HOUR_MICROSECOND,HOUR_MINUTE,HOUR_SECOND,IF,IGNORE,IGNORE_DOMAIN_IDS,IGNORE_SERVER_IDS,IN,INDEX,INFILE,INNER,INOUT,INSENSITIVE,INSERT,INT,INT1,INT2,INT3,INT4,INT8,INTEGER,INTERSECT,INTERVAL,INTO,IS,ITERATE,JOIN,KEY,KEYS,KILL,LEAD,LEADING,LEAVE,LEFT,LIKE,LIMIT,LINEAR,LINES,LOAD,LOCALTIME,LOCALTIMESTAMP,LOCK,LONG,LONGBLOB,LONGTEXT,LOOP,LOW_PRIORITY,MASTER_HEARTBEAT_PERIOD,MASTER_SSL_VERIFY_SERVER_CERT,MATCH,MAXVALUE,MEDIUMBLOB,MEDIUMINT,MEDIUMTEXT,MIDDLEINT,MINUTE_MICROSECOND,MINUTE_SECOND,MOD,MODIFIES,NATURAL,NOT,NO_WRITE_TO_BINLOG,NULL,NUMERIC,OFFSET,ON,OPTIMIZE,OPTION,OPTIONALLY,OR,ORDER,OUT,OUTER,OUTFILE,OVER,PAGE_CHECKSUM,PARSE_VCOL_EXPR,PARTITION,POSITION,PRECISION,PRIMARY,PROCEDURE,PURGE,RANGE,READ,READS,READ_WRITE,REAL,RECURSIVE,REF_SYSTEM_ID,REFERENCES,REGEXP,RELEASE,RENAME,REPEAT,REPLACE,REQUIRE,RESIGNAL,RESTRICT,RETURN,RETURNING,REVOKE,RIGHT,RLIKE,ROW_NUMBER,ROWS,SCHEMA,SCHEMAS,SECOND_MICROSECOND,SELECT,SENSITIVE,SEPARATOR,SET,SHOW,SIGNAL,SLOW,SMALLINT,SPATIAL,SPECIFIC,SQL,SQLEXCEPTION,SQLSTATE,SQLWARNING,SQL_BIG_RESULT,SQL_CALC_FOUND_ROWS,SQL_SMALL_RESULT,SSL,STARTING,STATS_AUTO_RECALC,STATS_PERSISTENT,STATS_SAMPLE_PAGES,STRAIGHT_JOIN,TABLE,TERMINATED,THEN,TINYBLOB,TINYINT,TINYTEXT,TO,TRAILING,TRIGGER,TRUE,UNDO,UNION,UNIQUE,UNLOCK,UNSIGNED,UPDATE,USAGE,USE,USING,UTC_DATE,UTC_TIME,UTC_TIMESTAMP,VALUES,VARBINARY,VARCHAR,VARCHARACTER,VARYING,WHEN,WHERE,WHILE,WINDOW,WITH,WRITE,XOR,YEAR_MONTH,ZEROFILL
+reserved_suffix: _
+### CDC BELOW ###
+sql_host : localhost
+sql_port: 22183
+sql_user: mfg
+sql_pass: mfgpro
+cdc_owner: CDC
+sql_db: mfgdb
+sql_quotefields: CHAR,DATE
+max_table_length: 29
+driverstring: com.ddtek.jdbc.openedge.OpenEdgeDriver
+initstring:
+poller_sleeptime: 1
+cdc_log: cdc.log
+cdc_clob_tables: Document,EntityMapping,EntityMetaData,EventHandler,ServerScript,StoredView,ViewMetaData,ViewResourceMetaData
+cdc_exclude_tables: cdc_det,fcInstance,DistributedTransaction,DistributedTransactionData,DistributedTransactionResource,ItemStatusRestrictedTransaction,ApprovalCfgFld
+# KAFKA # 
+send_topic: cdc
+# separate bootstrap servers with comma
+kafka_bootstrap: localhost:9092
+kafka_user: username
+kafka_password: password
+kafka_headers:
+  source : 'urn:system:cdc'
+  specversion : 1.0
+  type : cdc
+  datacontenttype : application/sql
+  qadsnkdb : mfgdb
+  qadenvtype : production
+  responsetopic : cdccallback
+# CASSANDRA #
+cassandra_host : localhost
+cassandra_keyspace : cdc
+cassandra_port : 9042
+cassandra_username : 
+cassandra_password: 
+cassandra_ignore_highwater: False
+cassandra_runlimit: 100
+push_daemon_mode: True
+push_poll_time : 10
+# CHECK DATA #
+check_log : check.log
+# SYSTEM DATA / CUSTOM SYSTEM DATA #
+mdbname_cust: custsysdb
+cust_owned_field: is_customer_owned tinyint(1) NOT NULL DEFAULT 1
+mdbname_sys: systemdatadb
+sys_tables: AccessControlEntry,AccessControlEntry,AddressType,App,AppDependency,AppModule,ApprovalCfg,ApprovalCfgFld,ApprovalCfgTsk,BEBrowse,BEBrowseField,BEBrowseFieldSort,BEBrowseRelation,BERelation,BERelationField,BERelationFilterCondition,BankAccFormat,BankAccFormatSect,Bdocument,BdocumentCom,BdocumentRel,BusActivity,BusComponent,Country,Document,EntityDataList,EntityDataListValue,EntityField,EntityFieldGroup,EntityFieldLookupSearchCondn,EntityFieldOverride,EntityMapping,EntityMetadata,EntityRelationship,EntityTable,EventHandler,EventTypeRegistry,ExchangeRateType,FieldSecurityPattern,FormulaFieldInfo,GLSystemType,GLType,IndexFieldMetadata,IndexMetadata,JournalType,KpiMetaDomain,KpiMetaEntity,KpiMetaField,KpiMetaFilter,KpiMetadata,Layout,Locale,LookupDefinition,LookupQualifier,LookupResultField,LookupSearchCondition,MDMSetup,MDMSetupBusinessComp,MenuResource,MenuTree,MenuTreeNode,NotifyCateg,NotifyLocale,NotifyTemplate,NotifyVersion,OSScript,OSScriptArgument,PermissionType,ProfileType,RelatedEntity,RelatedField,RelatedFieldRel,ResourceDependency,ResourceIdentity,ResourceMapping,ResourcePermissionType,Resources,Role,RoleResource,RoundingMethod,SSearchFilterField,SSearchResultField,SafConcept,ServerScript,ServiceMetadata,ServiceParam,ServiceRest,SharedSetType,StoredSearch,StoredView,StoredViewRoleDomain,Theme,ThemeImage,ThemePalette,ThemeProperty,TranslatedString,TranslatedStringModule,ViewMetadata,ViewResourceMetadata,actf_mstr,arfld_det,brw_mstr,brwf_det,brwt_det,cd_det,ctry_mstr,edmf_mstr,edmfd_det,edmfdd_det,fcDaemon,fcSettingConfig,fcTranslation,fldattr_mstr,lbl_mstr,lbld_det,lngd_det,msg_mstr,proc_det,prol_det,rnd_mstr,vue_mstr,vuf_det,vwj_det
