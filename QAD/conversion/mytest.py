@@ -1,29 +1,10 @@
+#!/usr/bin/env python3
 '''
-OpenEdge ETL Harness for QAD to MariaDB
-Project Inspiration
+    Testing overriding parameters that are
+    boolean in the yaml file eg process_entire_database
 
-Written by Derek Bradley
-Copyright QAD 2023
-
-Requires Python3.6+
-
-Usage notes :   python3.7 oemdbetlharness.py --cfg /path/to/[yamlconfigfile].yaml --overrides
-
-any entry in the YAML file can be overriden at runtime.
-Examples :
-
-python3.7 ./oemdbetlharness.py --cfg oemdbetl.yaml \
-        --loglevel INFO --process_functions loadSchema \
-        --process_entire_database True
-python3.7 ./oemdbetlharness.py --cfg oemdbetl.yaml \
-        --loglevel DEBUG --process_functions loadData \
-        --include_tables Document
-python3.7 ./oemdbetlharness.py --cfg oemdbetl.yaml --loglevel info \
-        --process_functions extractIndex
-
-Note that you can run multiple versions of this in parallel by using
-include_tables pointing to distinct subsets of tables
-
+    The problem is that when provided as override it
+    will turn into a <str> datatype.
 '''
 
 import sys
@@ -87,7 +68,6 @@ def add_arguments(parser, cfg):
 def process_overrides(args, cfg):
     '''
         Override configuration setting when argument is supplied
-        Modified to reflect 'boolean' variable settings (like: etl)
     '''
     for key, value in vars(args).items():
         if key == 'cfg':
@@ -105,7 +85,6 @@ def process_overrides(args, cfg):
         else:
             print('Overriding %s setting to %s' % (key, value))
             cfg[key] = value
-
     return cfg
 
 
@@ -145,6 +124,25 @@ if __name__ == '__main__':
 
     cfg = process_overrides(args, cfg)
 
+    print('Value of etl: %s' % cfg['etl'])
+    print('Type of etl: %s' % type(cfg['etl']))
+
+    print('Checking some if-statements for etl:')
+    if cfg['etl']:
+        print('\tif with no operand')
+    if cfg['etl'] == True:
+        print('\tif with "==" operand')
+    if cfg['etl'] is True:
+        print('\tif with "is" operand')
+    print('Checking some if-statements for process_entire_database:')
+    if cfg['process_entire_database']:
+        print('\tif with no operand')
+    if cfg['process_entire_database'] == True:
+        print('\tif with "==" operand')
+    if cfg['process_entire_database'] is True:
+        print('\tif with "is" operand')
+
+'''
     conn = False
 
     print('*** Beginning ETL Process ***')
@@ -320,3 +318,4 @@ if __name__ == '__main__':
     elapsed_time(start_time)
 
     sys.exit(0)
+'''
