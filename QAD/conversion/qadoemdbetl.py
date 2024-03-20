@@ -906,7 +906,7 @@ def extract(cfg, logger, operation):
 
     try:
         stage = cfg['stage']
-        process_entire_database = eval(cfg['process_entire_database'])
+        process_entire_database = cfg['process_entire_database']
         exclude_tables = cfg['exclude_tables']
         include_tables = cfg['include_tables']
         oedbpath = cfg['oedbpath']
@@ -958,7 +958,7 @@ def extract(cfg, logger, operation):
         tablequery = tablequery.replace('#FWD_SEQUENCE#', fwd_sequence)
         tablequery = tablequery.replace('#OFFSET#', datetime_index_suffix)
         result = runabl(tablequery, cfg, logger)
-        if result is False:
+        if result == False:
             logger.error('Could not extract %s for %s.  Skipping' % (
                 operation, table))
             if quit_on_table_error:
@@ -1028,7 +1028,7 @@ def load(cfg, logger, operation, conn):
 
     try:
         stage = cfg['stage']
-        process_entire_database = eval(cfg['process_entire_database'])
+        process_entire_database = cfg['process_entire_database']
         exclude_tables = cfg['exclude_tables']
         include_tables = cfg['include_tables']
         quit_on_table_error = cfg['quit_on_table_error']
@@ -1199,7 +1199,7 @@ def loadData(fn, table, cfg, logger, conn):
             return False
         rows = cur.fetchone()
         if rows[0] == True:
-            if skip_table_with_data is True:
+            if skip_table_with_data == True:
                 logger.error('Skipping to next table')
                 return True
 
@@ -1252,7 +1252,7 @@ def loadData(fn, table, cfg, logger, conn):
 
     cur = run_msql(qry, conn, cfg, logger)
 
-    if cur is False:
+    if cur == False:
         logger.info('Errors loading dump file for %s.%s' % (
             mdbname, table))
         if stop_on_error:
@@ -1263,7 +1263,7 @@ def loadData(fn, table, cfg, logger, conn):
     warnings = conn.show_warnings()
     try:
         for warning in warnings:
-            logger.error(warning)
+            logger.warning(warning)
     except Exception:
         pass
     # we need to commit this load infile as it runs with autocommit off
@@ -1757,9 +1757,8 @@ def postprocessData(mdbname, table, cfg, conn, logger):
     logger.info(qrylist)
     for qry in qrylist:
         cur = run_msql(qry, conn, cfg, logger)
-        if isinstance(cur, bool):
-            if cur is False:
-                return False
+        if cur == False:
+            return False
 
         conn.commit()
         cur.close()
@@ -1772,6 +1771,9 @@ def postprocessSchema(table, cfg, logger):
     read back each line, if split(';')[4] > 0 then do not add the line
     instead replace [1] with [1] + an increasing number from 1 until = [4] and add that
     except for [0] in extent_special then just csv values as rows from qextent_[special]
+
+    datetime-tz will be converted into timestamp <field> and integer
+    <field_offset>
     '''
 
     logger.info('Postprocessing Schema for %s' % table)
@@ -1840,13 +1842,25 @@ def postprocessSchema(table, cfg, logger):
                 foundChanges = True
             except Exception:
                 newschema.append(line)
+                # pass
 
             # handles timestamp and datetime
             if tokens[2] == 'datetime-tz':
                 foundChanges = True
                 # newline = tokens[0]  + ';' + tokens[1] + datetime_index_suffix + ';' + tokens[2] + ';' + tokens[3] + ';0;'+ tokens[5] + ';' + tokens[6] + ';' + tokens[7]
-                newline = tokens[0] + ';' + tokens[1] + datetime_index_suffix + ';' + 'integer' + ';' + '>>>>>>>9' + ';0;' + tokens[5] + ';' + tokens[6] + ';' + '11\n'
+                # Maybe the default format must be changed for datetime-tz
+                '''
+                if tokens[5] == '?':
+                    tokens[5] = ''
+                newline = tokens[0] + ';' + tokens[1] + ';' + tokens[2] + ';' + '99/99/999' \
+                + ';' + tokens[4] + ';' + tokens[5] + ';' + tokens[6] + ';' + tokens[7]
                 newschema.append(newline)
+                '''
+                newline = tokens[0] + ';' + tokens[1] + datetime_index_suffix + \
+                ';' + 'integer' + ';' + '>>>>>>>9' + ';0;' + '0' + ';' + tokens[6] + ';' + '11\n'
+                newschema.append(newline)
+            # else:
+                # newschema.append(line)
 
     if not foundChanges:
         return True
@@ -1956,8 +1970,8 @@ def run_msql(qry, conn, cfg, logger):
     logger.info('running %s' % qry)
 
     try:
-        stop_on_duplicate = eval(cfg['stop_on_duplicate'])
-        stop_on_error = eval(cfg['stop_on_error'])
+        stop_on_duplicate = cfg['stop_on_duplicate']
+        stop_on_error = cfg['stop_on_error']
     except KeyError as e:
         logger.error(f'YAML file is missing key {e}')
         return False
