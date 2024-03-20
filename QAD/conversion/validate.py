@@ -99,7 +99,6 @@ def mdb_getsequences(conn, db, logger):
     qry = 'select table_name from information_schema.tables ' + \
         "where table_schema = '" + db + "' and table_type = 'sequence'"
 
-    logger.info('query: %s' % qry)
     _cur = conn.cursor()
 
     _cur.execute(qry)
@@ -653,8 +652,13 @@ def validateSequence(cfg, logger, operation):
         oeseq += oem_getsequences(file, logger)
 
     # Check if OE sequences are defined in MariaDB
+    notfound = False
     for s in oeseq:
         if s not in sequences:
             logger.warning('Sequence %s not defined in MariaDB' % s)
+            notfound = True
+
+    if notfound is False:
+        logger.info('All sequences in OpenEdge are in MariaDB')
 
     return True

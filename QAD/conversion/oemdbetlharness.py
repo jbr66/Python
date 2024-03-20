@@ -243,9 +243,9 @@ if __name__ == '__main__':
             sys.exit(0)
 
     if 'validateSchema' in process_functions:
-        result = validate.validateData(cfg, logger, 'validateSchema')
+        result = validate.validateSchema(cfg, logger, 'validateSchema')
         if result is False:
-            print('Error in validateData, see error log, exiting now')
+            print('Error in validateSchema, see error log, exiting now')
             elapsed_time(start_time)
             sys.exit(0)
 

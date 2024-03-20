@@ -514,7 +514,7 @@ def cdc_push_update(changeseq, row, column_names, fieldmap, table, cdc_owner, p,
                         n = n[0].rstrip()
                         if 'oid' in curs.description[columncount][0]:
                             n = cdc_fix_oid(n, logger)
-                    kstring = kstring + n + ','
+                        kstring = kstring + n + ','
                 else:
                     if foundExtent:
                         k = cdc_extent_values_nq(fld, str(k), cfg, logger)
@@ -567,13 +567,13 @@ def cdc_push_update(changeseq, row, column_names, fieldmap, table, cdc_owner, p,
                             if 'oid' in curs.description[columncount][0]:
                                 n = cdc_fix_oid(n, logger)
                             kstring = kstring + n + ','
-                else:
-                    if len(str(k)) > 15:
-                        if 'oid' in curs.description[columncount][0]:
-                            k = cdc_fix_oid(k, logger)
-                        kstring = kstring + str(f'{k:f}') + ','
                     else:
-                        kstring = kstring + str(k) + ','
+                        if len(str(k)) > 15:
+                            if 'oid' in curs.description[columncount][0]:
+                                k = cdc_fix_oid(k, logger)
+                            kstring = kstring + str(f'{k:f}') + ','
+                else:
+                    kstring = kstring + str(k) + ','
 
     # strip last comma
     msg = kstring[:-1]
@@ -699,21 +699,21 @@ def cdc_track_changes(conn, curs, p, table, keys, tn, seq, cfg, mandatorydict, l
                 logger.info('Changes Found')
                 logger.info(fieldmap)
 
-            # does key exist from field policies?  if not, go get it.  key needed for deletes and updates.
-            # Note that we assume that every table has a key, so at this point if we are getting a new key, we can go and grab the mandatory fields as well
-            try:
-                key = keys[table]
-            except Exception as e:
-                logger.warning(e)
-                policyid = row[0]
-                logger.warning('key not found for %s , searching field policies to add using policy id %s' % (table, policyid))
-                key = cdc_get_key(table, policyid, conn, logger)
-                logger.warning('inserting into keys[]')
-                keys[table] = key
-                logger.info('refreshing mandatory fields for %s' % table)
-                mandatorydict = cdc_get_mandatory(table, conn, mandatorydict, logger)
-                if mandatorydict == {}:
-                    logger.error('Could not load mandatory fields. SQL inserts may fail')
+                # does key exist from field policies?  if not, go get it.  key needed for deletes and updates.
+                # Note that we assume that every table has a key, so at this point if we are getting a new key, we can go and grab the mandatory fields as well
+                try:
+                    key = keys[table]
+                except Exception as e:
+                    logger.warning(e)
+                    policyid = row[0]
+                    logger.warning('key not found for %s , searching field policies to add using policy id %s' % (table, policyid))
+                    key = cdc_get_key(table, policyid, conn, logger)
+                    logger.warning('inserting into keys[]')
+                    keys[table] = key
+                    logger.info('refreshing mandatory fields for %s' % table)
+                    mandatorydict = cdc_get_mandatory(table, conn, mandatorydict, logger)
+                    if mandatorydict == {}:
+                        logger.error('Could not load mandatory fields. SQL inserts may fail')
 
             count = count + 1
             operation = row[8]
@@ -1380,20 +1380,20 @@ def loadIndex(fn, table, cfg, logger, conn):
                 else:
                     unique = ''
 
-            if tokens[0] != indexname:
-                # remove last comma
-                if qryline.strip() != '':
+                if tokens[0] != indexname:
+                    # remove last comma
+                    if qryline.strip() != '':
 
-                    qryline = qryline[:-1] + ')'
-                    qrylist.append(qryline)
-                    qryline = ''
+                        qryline = qryline[:-1] + ')'
+                        qrylist.append(qryline)
+                        qryline = ''
 
-            if tokens[1] == '1':
-                qryline = 'CREATE %s INDEX %s ON %s.%s ( %s ' % (
-                    unique, tokens[0], mdbname, table, tokens[3]) + ','
-                indexname = tokens[0]
-            else:
-                qryline = qryline + tokens[3] + ','
+                if tokens[1] == '1':
+                    qryline = 'CREATE %s INDEX %s ON %s.%s ( %s ' % (
+                        unique, tokens[0], mdbname, table, tokens[3]) + ','
+                    indexname = tokens[0]
+                else:
+                    qryline = qryline + tokens[3] + ','
 
         except Exception as e:
             logger.error(e)
@@ -1416,8 +1416,9 @@ def loadIndex(fn, table, cfg, logger, conn):
 
     for qry in qrylist:
         cur = run_msql(qry, conn, cfg, logger)
-        if cur is False:
-            return False
+        if isinstance(cur, bool):
+            if cur is False:
+                return False
 
     return True
 
@@ -1599,9 +1600,10 @@ def loadSchema(fn, cfg, logger, conn):
             return False
 
         fieldtype, fieldformat = mapformat(fieldtype, fieldformat, fieldwidth, cfg, logger)
-        if fieldformat is False:
-            logger.error('Cannot map format.  Cannot load schema')
-            return False
+        if isinstance(fieldformat, bool):
+            if fieldformat is False:
+                logger.error('Cannot map format.  Cannot load schema')
+                return False
 
         # add to query
         qry = qry + fieldname + ' ' + fieldtype + ' ' + fieldformat + nullable + ','
@@ -1616,8 +1618,9 @@ def loadSchema(fn, cfg, logger, conn):
     logger.info(qry)
 
     cur = run_msql(qry, conn, cfg, logger)
-    if cur is False:
-        return False
+    if isinstance(cur, bool):
+        if cur is False:
+            return False
 
     return True
 
@@ -1664,8 +1667,9 @@ def loadSequence(cfg, logger, conn):
 
     for qry in qrylst:
         cur = run_msql(qry, conn, cfg, logger)
-        if cur is False:
-            return False
+        if isinstance(cur, bool):
+            if cur is False:
+                return False
 
     conn.commit()
     cur.close()
@@ -1753,8 +1757,9 @@ def postprocessData(mdbname, table, cfg, conn, logger):
     logger.info(qrylist)
     for qry in qrylist:
         cur = run_msql(qry, conn, cfg, logger)
-        if cur is False:
-            return False
+        if isinstance(cur, bool):
+            if cur is False:
+                return False
 
         conn.commit()
         cur.close()
@@ -1951,8 +1956,8 @@ def run_msql(qry, conn, cfg, logger):
     logger.info('running %s' % qry)
 
     try:
-        stop_on_duplicate = cfg['stop_on_duplicate']
-        stop_on_error = cfg['stop_on_error']
+        stop_on_duplicate = eval(cfg['stop_on_duplicate'])
+        stop_on_error = eval(cfg['stop_on_error'])
     except KeyError as e:
         logger.error(f'YAML file is missing key {e}')
         return False
