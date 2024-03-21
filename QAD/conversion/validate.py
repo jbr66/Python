@@ -324,7 +324,7 @@ def collectfiles(cfg, logger, suffix):
 
     try:
         stage = cfg['stage']
-        process_entire_database = eval(cfg['process_entire_database'])
+        process_entire_database = cfg['process_entire_database']
         exclude_tables = cfg['exclude_tables']
         include_tables = cfg['include_tables']
     except KeyError as e:

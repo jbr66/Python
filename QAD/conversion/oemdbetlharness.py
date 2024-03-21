@@ -161,7 +161,7 @@ if __name__ == '__main__':
         if 'load' in line:
             conn = True
 
-    if eval(cfg['process_entire_database']) is True:
+    if cfg['process_entire_database']:
         print('On the entire %s/%s database' % (cfg['oedbpath'], cfg['oedbname']))
     else:
         print('On the following tables in database %s/%s: %s' % (

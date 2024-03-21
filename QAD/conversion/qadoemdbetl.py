@@ -1928,8 +1928,13 @@ def runabl(query, cfg, logger):
         with open(tf.name, "w") as t:
             t.write(query)
 
-        runstring = 'TERM=ansi;export $TERM;_progres -db %s/%s' % (
-            oedbpath, oedbname)
+        if not oedbuser == 'None' and not oedbpassword == 'None':
+            userstring = '-U %s -P %s' % (oedbuser, oedbpassword)
+        else:
+            userstring = ''
+
+        runstring = 'TERM=ansi;export $TERM;_progres -db %s/%s %s' % (
+            oedbpath, oedbname, userstring)
         runstring = runstring + ' -p ' + tf.name + ' ' + pfparams
         logger.debug(runstring)
 
