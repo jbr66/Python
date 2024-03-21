@@ -1827,7 +1827,7 @@ def postprocessSchema(table, cfg, logger):
 
             c = 1
             while c <= int(tokens[4]):
-                newline = tokens[0] + ';' + tokens[1] + str(c) + ';' + tokens[2] + ';' + tokens[3] + ';0;' + tokens[5] + ';' + tokens[6] + ';' + tokens[7]
+                newline = tokens[0] + ';' + tokens[1] + reserved_suffix + str(c) + ';' + tokens[2] + ';' + tokens[3] + ';0;' + tokens[5] + ';' + tokens[6] + ';' + tokens[7]
                 newschema.append(newline)
                 c = c + 1
         else:

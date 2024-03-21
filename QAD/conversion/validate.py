@@ -449,6 +449,14 @@ def validateSchema(cfg, logger, operation):
                                                  len(schema[mdbname][mdbtable])))
                 nr_errors += 1
 
+        # Verify if the names of the fields are the same
+        for field in oeschema[oetable].keys():
+            if field not in schema[mdbname][mdbtable].keys():
+                logger.error('Field %s cannot be found in %s.%s' % (field,
+                                                                    mdbname,
+                                                                    mdbtable))
+                nr_errors += 1
+
         for field in compare[oetable].keys():
             # Store data in variables
             oetype = compare[oetable][field]['type'][0]
