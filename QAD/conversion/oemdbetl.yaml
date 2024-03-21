@@ -14,7 +14,7 @@ fwd_index_field: recid;int64;9999999999;0;1;yes;8
 fwd_sequence: p2j_id_generator_sequence
 idxsuffix: None
 idxprefix: idx__
-# note there are no current extent fields in QAD with datetime or datetime-tz so the conversion logic will not 
+# note there are no current extent fields in QAD with datetime or datetime-tz so the conversion logic will not
 # process these datetime in the extend field denormalization logic
 datetime_index_suffix: _offset
 process_entire_database: False
@@ -28,7 +28,7 @@ process_functions: extractSchema,extractIndex
 #include_tables: Company,ad_mstr,so_mstr,qad_wkfl
 #include_tables: ad_mstr,Company,UserSession,AccessControlEntry,AddressType,vuf_det,vwj_det
 include_tables: Document,EntityMapping
-exclude_tables: module-fincore,module-mfgcoreplus,cdc_det,ItemStatusRestrictedTransaction
+exclude_tables: module-fincore,module-mfgcoreplus,cdc_det,ItemStatusRestrictedTransaction,Posting,ReqSiteControl,RequisitionControl,Role
 dlc: /tech/progress/dlc11714
 large_clob_tables: Document,EntityMapping,EntityMetaData,EventHandler,ServerScript,StoredView,ViewMetaData,ViewResourceMetaData
 oedbpath: oe/db

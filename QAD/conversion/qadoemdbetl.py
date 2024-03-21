@@ -919,6 +919,7 @@ def extract(cfg, logger, operation):
         fwd_index_field = cfg['fwd_index_field']
         fwd_sequence = cfg['fwd_sequence']
         datetime_index_suffix = cfg['datetime_index_suffix']
+        reserved_suffix = cfg['reserved_suffix']
     except KeyError as e:
         logger.error(f'YAML file is missing key {e}')
         return False
@@ -929,10 +930,8 @@ def extract(cfg, logger, operation):
         return False
 
     query = readdotp(abl, cfg, logger)
-    # if type(query) == bool :
-    if isinstance(query, bool):
-        if query is False:
-            return False
+    if query is False:
+        return False
 
     if process_entire_database is True:
         logger.info('Extracting all tables except %s from %s/%s' % (
@@ -956,6 +955,7 @@ def extract(cfg, logger, operation):
         tablequery = tablequery.replace('#FWD_INDEX_NAME#', fwd_index_name)
         tablequery = tablequery.replace('#FWD_INDEX_KEY#', fwd_index_key)
         tablequery = tablequery.replace('#FWD_SEQUENCE#', fwd_sequence)
+        tablequery = tablequery.replace('#SUFFIX#', reserved_suffix)
         tablequery = tablequery.replace('#OFFSET#', datetime_index_suffix)
         result = runabl(tablequery, cfg, logger)
         if result == False:

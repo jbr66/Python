@@ -34,6 +34,7 @@ define variable myUUID as RAW NO-UNDO.
 define variable charkey as character no-undo.
 define variable Base64UUID as CHARACTER NO-UNDO.
 define variable clobtables as character NO-UNDO INITIAL "#LARGECLOB#".
+define variable reserved_suffix as character NO-UNDO INITIAL "#SUFFIX#".
 
 
 define variable lcVariable as longchar no-undo.
@@ -44,12 +45,13 @@ put unformatted "#FWD_INDEX_KEY#^".
 DO i = 1 TO vwhtable:NUM-FIELDS:
    /* handle extent fields */
    if vWHTable:BUFFER-FIELD(i):EXTENT > 0 then do:
-      /* qad_charfld1 FWD hack */
+      /* qad_charfld1 FWD hack 
       if vwhtable:BUFFER-FIELD(i):NAME = "qad_charfld1" then 
          put unformatted "qad_charfld111^qad_charfld122^qad_charfld133^qad_charfld144^qad_charfld155^qad_charfld16^qad_charfld17^qad_charfld18^qad_charfld19^qad_charfld110^qad_charfld1116^qad_charfld112^qad_charfld113^qad_charfld114^qad_charfld115^".
       else 
+      */
       do j = 1 to vWHTable:BUFFER-FIELD(i):EXTENT :
-         put unformatted vwhtable:BUFFER-FIELD(i):NAME + string(j) + "^".
+         put unformatted vwhtable:BUFFER-FIELD(i):NAME + string(reserved_suffix) + string(j) + "^".
       end.   
    end.
    else do :
