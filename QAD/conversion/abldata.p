@@ -93,7 +93,7 @@ DO WHILE hQuery:QUERY-OFF-END = FALSE:
                  else do :
                    /* logicals must be 1 or 0 */
                    if vWHTable:BUFFER-FIELD(i):data-type = "logical" then do:
-                      if vWHTable:BUFFER-FIELD(i):BUFFER-VALUE = yes then s = s + "1". else s = s + "0".
+                      if vWHTable:BUFFER-FIELD(i):BUFFER-VALUE(j) = yes then s = s + "1". else s = s + "0".
                    end.                 
                    s = s + string(vWHTable:BUFFER-FIELD(i):BUFFEr-VALUE(j)).
                  end.
